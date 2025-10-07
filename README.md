@@ -4,71 +4,71 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-Production-ready Python tool for analyzing text-background contrast according to **WCAG 2.2** accessibility standards using **Machine Learning** algorithms.
+Production-ready Python инструмент для анализа контрастности текста и фона согласно стандарту **WCAG 2.2** с использованием **машинного обучения**.
 
-## 📋 Overview
+## 📋 Обзор
 
-This tool analyzes contrast between text and background colors in presentation slides, using ML algorithms to extract dominant colors from backgrounds and calculate WCAG compliance. Perfect for ensuring your slides are accessible!
+Этот инструмент анализирует контрастность между текстом и фоном в презентационных слайдах, используя ML алгоритмы для извлечения доминирующих цветов и расчета соответствия WCAG. Идеален для обеспечения доступности ваших презентаций!
 
-### ✨ Key Features
+### ✨ Ключевые возможности
 
-- ✅ **WCAG 2.2 Compliant**: Accurate contrast ratio calculation per WCAG standards
-- 🤖 **ML-Powered**: Two unsupervised learning algorithms for color extraction:
-  - **Median-cut** (faster, Pillow ADAPTIVE)
-  - **K-means clustering** (more accurate, scikit-learn)
-- 📊 **HTML Reports**: Beautiful visual reports with suggestions
-- 🐳 **Docker Ready**: Multi-stage Docker build included
-- 🧪 **Well Tested**: Comprehensive test suite with pytest
-- 📝 **Type Safe**: Full type hints and mypy checked
-- 🎯 **CLI Interface**: Easy-to-use command-line tool
+- ✅ **Соответствие WCAG 2.2**: Точный расчет контрастности по стандарту WCAG
+- 🤖 **ML-алгоритмы**: Два алгоритма обучения без учителя для извлечения цветов:
+  - **Median-cut** (быстрее, Pillow ADAPTIVE)
+  - **K-means кластеризация** (точнее, scikit-learn)
+- 📊 **HTML отчеты**: Красивые визуальные отчеты с рекомендациями
+- 🐳 **Docker готов**: Включен multi-stage Docker build
+- 🧪 **Хорошо протестирован**: Комплексный набор тестов с pytest
+- 📝 **Типобезопасен**: Полные type hints и проверка mypy
+- 🎯 **CLI интерфейс**: Удобный инструмент командной строки
 
-## 🚀 Quick Start
+## 🚀 Быстрый старт
 
-### Installation
+### Установка
 
-#### Option 1: Local Installation (venv)
+#### Вариант 1: Локальная установка (venv)
 
 ```bash
-# Clone repository
+# Клонировать репозиторий
 git clone https://github.com/DaniilZebzeev/hse-ml-contrast-checker.git
 cd hse-ml-contrast-checker
 
-# Create virtual environment
+# Создать виртуальное окружение
 python -m venv venv
 
-# Activate venv
+# Активировать venv
 # Linux/Mac:
 source venv/bin/activate
 # Windows:
 venv\Scripts\activate
 
-# Install dependencies
+# Установить зависимости
 pip install -r requirements.txt
 ```
 
-#### Option 2: Docker
+#### Вариант 2: Docker
 
 ```bash
-# Build image
+# Собрать образ
 docker build -t hse-contrast-checker .
 
-# Or use docker-compose
+# Или использовать docker-compose
 docker-compose build
 ```
 
-### Basic Usage
+### Базовое использование
 
 ```bash
-# Analyze slide with color background
+# Анализ слайда с цветным фоном
 python -m src.cli --slide-json examples/slide_color_bg.json
 
-# Analyze with image background using K-means
+# Анализ с фоновым изображением используя K-means
 python -m src.cli \
     --slide-json examples/slide_with_image.json \
     --bg-image examples/background.png \
     --ml-method kmeans
 
-# Custom output paths
+# Пользовательские пути вывода
 python -m src.cli \
     --slide-json examples/slide_complex.json \
     --out-json results/my_result.json \
@@ -76,24 +76,24 @@ python -m src.cli \
     --verbose
 ```
 
-### Docker Usage
+### Использование Docker
 
 ```bash
-# Using docker run
+# Используя docker run
 docker run -v $(pwd)/examples:/app/examples -v $(pwd)/output:/app/output \
     hse-contrast-checker --slide-json /app/examples/slide_color_bg.json
 
-# Using docker-compose
+# Используя docker-compose
 docker-compose run contrast-checker \
     --slide-json /app/examples/slide_with_image.json \
     --bg-image /app/examples/background.png
 ```
 
-## 📚 How It Works
+## 📚 Как это работает
 
-### 1. Input Format
+### 1. Формат входных данных
 
-The tool accepts JSON files describing slides:
+Инструмент принимает JSON файлы с описанием слайдов:
 
 ```json
 {
@@ -103,35 +103,35 @@ The tool accepts JSON files describing slides:
 }
 ```
 
-### 2. ML Color Extraction
+### 2. ML извлечение цветов
 
-**Median-cut Algorithm** (Default):
-- Fast palette quantization
-- Recursively divides color space
-- O(n log n) complexity
+**Median-cut алгоритм** (по умолчанию):
+- Быстрая квантизация палитры
+- Рекурсивное деление цветового пространства
+- Сложность O(n log n)
 
-**K-means Clustering**:
-- More accurate for complex images
-- Unsupervised learning approach
-- Finds k cluster centers in RGB space
+**K-means кластеризация**:
+- Более точный для сложных изображений
+- Подход обучения без учителя
+- Находит k центров кластеров в RGB пространстве
 
-### 3. WCAG 2.2 Contrast Calculation
+### 3. Расчет контрастности WCAG 2.2
 
-Formula: `(L1 + 0.05) / (L2 + 0.05)`
+Формула: `(L1 + 0.05) / (L2 + 0.05)`
 
-| Level | Normal Text | Large Text |
-|-------|-------------|------------|
-| AA    | 4.5:1       | 3:1        |
-| AAA   | 7:1         | 4.5:1      |
+| Уровень | Обычный текст | Крупный текст |
+|---------|---------------|---------------|
+| AA      | 4.5:1         | 3:1           |
+| AAA     | 7:1           | 4.5:1         |
 
-**Large text** = 18pt+ (24px+) OR 14pt+ bold (18.67px+ bold)
+**Крупный текст** = 18pt+ (24px+) ИЛИ 14pt+ жирный (18.67px+ жирный)
 
-### 4. Output
+### 4. Выходные данные
 
-- **JSON**: Machine-readable analysis results
-- **HTML**: Visual report with color previews and suggestions
+- **JSON**: Машиночитаемые результаты анализа
+- **HTML**: Визуальный отчет с примерами цветов и рекомендациями
 
-## 🏗️ Architecture
+## 🏗️ Архитектура
 
 ```
 ┌─────────────────┐
@@ -139,7 +139,7 @@ Formula: `(L1 + 0.05) / (L2 + 0.05)`
 └────────┬────────┘
          │
     ┌────▼─────────────────┐
-    │ contrast_checker.py  │ ◄─── Main orchestrator
+    │ contrast_checker.py  │ ◄─── Главный оркестратор
     └────┬─────────────────┘
          │
     ┌────▼──────────┬──────────────┬───────────────┐
@@ -147,147 +147,147 @@ Formula: `(L1 + 0.05) / (L2 + 0.05)`
 ┌───▼────┐  ┌──────▼─────┐  ┌────▼─────┐  ┌─────▼────┐
 │color_  │  │html_       │  │image_    │  │wcag.py   │
 │parser  │  │parser      │  │analyzer  │  │          │
-│        │  │(BS4)       │  │(ML)      │  │(formulas)│
+│        │  │(BS4)       │  │(ML)      │  │(формулы) │
 └────────┘  └────────────┘  └──────────┘  └──────────┘
 ```
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for details.
+Подробнее см. [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-## 🧪 Testing
+## 🧪 Тестирование
 
 ```bash
-# Install dev dependencies
+# Установить dev зависимости
 pip install -r requirements-dev.txt
 
-# Run tests
+# Запустить тесты
 pytest tests/ -v
 
-# With coverage
+# С покрытием
 pytest tests/ --cov=src --cov-report=html
 
-# Type checking
+# Проверка типов
 mypy src
 
-# Linting
+# Линтинг
 flake8 src tests
 black --check src tests
 ```
 
-## 📖 API Documentation
+## 📖 Документация API
 
-See [docs/API.md](docs/API.md) for detailed API reference.
+См. [docs/API.md](docs/API.md) для подробной справки API.
 
-## 🤖 ML Approach
+## 🤖 ML подход
 
-This project uses **unsupervised learning** for color extraction:
+Этот проект использует **обучение без учителя** для извлечения цветов:
 
-### Median-cut Algorithm
-- **Type**: Recursive palette quantization
-- **Complexity**: O(n log k)
-- **Pros**: Fast, deterministic
-- **Cons**: Less accurate for complex gradients
+### Median-cut алгоритм
+- **Тип**: Рекурсивная квантизация палитры
+- **Сложность**: O(n log k)
+- **Плюсы**: Быстрый, детерминированный
+- **Минусы**: Менее точен для сложных градиентов
 
-### K-means Clustering
-- **Type**: Iterative cluster optimization
-- **Complexity**: O(n * k * i) where i = iterations
-- **Pros**: More accurate, finds "true" dominant colors
-- **Cons**: Slower, requires more memory
+### K-means кластеризация
+- **Тип**: Итеративная оптимизация кластеров
+- **Сложность**: O(n * k * i), где i = итерации
+- **Плюсы**: Более точный, находит "истинные" доминирующие цвета
+- **Минусы**: Медленнее, требует больше памяти
 
-See [docs/ML_APPROACH.md](docs/ML_APPROACH.md) for mathematical details.
+См. [docs/ML_APPROACH.md](docs/ML_APPROACH.md) для математических деталей.
 
-## 🔧 Configuration
+## 🔧 Конфигурация
 
-### CLI Options
+### Опции CLI
 
 ```
---slide-json PATH       Input slide JSON (required)
---slide-index INT       Slide index if JSON is array
---bg-image PATH         Background image file
---ml-method CHOICE      mediancut|kmeans (default: mediancut)
---k-colors INT          Number of colors to extract (default: 5)
---out-json PATH         Output JSON path
---out-html PATH         Output HTML report path
---verbose               Enable verbose logging
+--slide-json PATH       Входной JSON слайда (обязательно)
+--slide-index INT       Индекс слайда, если JSON массив
+--bg-image PATH         Файл фонового изображения
+--ml-method CHOICE      mediancut|kmeans (по умолчанию: mediancut)
+--k-colors INT          Количество цветов для извлечения (по умолчанию: 5)
+--out-json PATH         Путь выходного JSON
+--out-html PATH         Путь выходного HTML отчета
+--verbose               Включить подробное логирование
 ```
 
-## 📊 Example Output
+## 📊 Пример вывода
 
-### Console Output
+### Консольный вывод
 ```
-✓ Analysis complete!
-  📊 Slide ID: slide-001
-  📝 Total entities: 3
-  ✅ Passed AA Normal: 2
-  ❌ Failed AA Normal: 1
+Analysis complete!
+  Slide ID: slide-001
+  Total entities: 3
+  Passed AA Normal: 2
+  Failed AA Normal: 1
 
-  📁 JSON: output/result.json
-  🌐 HTML: output/report.html
+  JSON: output/result.json
+  HTML: output/report.html
 ```
 
-### HTML Report
-The HTML report includes:
-- Summary with effective background color
-- Per-entity contrast ratios
-- WCAG compliance badges (AA Normal, AA Large, AAA)
-- Visual previews of text/background combinations
-- Actionable suggestions for failed entities
+### HTML отчет
+HTML отчет включает:
+- Сводку с эффективным цветом фона
+- Контрастность для каждого элемента
+- Значки соответствия WCAG (AA Normal, AA Large, AAA)
+- Визуальные примеры комбинаций текст/фон
+- Практические рекомендации для неудачных элементов
 
-## 🛠️ Development
+## 🛠️ Разработка
 
-### Project Structure
+### Структура проекта
 
 ```
 hse-ml-contrast-checker/
 ├── src/
-│   ├── color_parser.py       # CSS color parsing
-│   ├── html_parser.py         # BeautifulSoup entity extraction
-│   ├── image_analyzer.py      # ML algorithms
-│   ├── wcag.py                # WCAG calculations
-│   ├── contrast_checker.py    # Main orchestrator
-│   ├── report_generator.py    # HTML report generator
-│   └── cli.py                 # CLI interface
-├── tests/                     # pytest tests
-├── examples/                  # Example JSON files
-├── docs/                      # Documentation
+│   ├── color_parser.py       # Парсинг CSS цветов
+│   ├── html_parser.py         # Извлечение элементов BeautifulSoup
+│   ├── image_analyzer.py      # ML алгоритмы
+│   ├── wcag.py                # Расчеты WCAG
+│   ├── contrast_checker.py    # Главный оркестратор
+│   ├── report_generator.py    # Генератор HTML отчетов
+│   └── cli.py                 # CLI интерфейс
+├── tests/                     # pytest тесты
+├── examples/                  # Примеры JSON файлов
+├── docs/                      # Документация
 ├── Dockerfile                 # Multi-stage Docker build
-├── docker-compose.yml         # Docker Compose config
-└── requirements.txt           # Production dependencies
+├── docker-compose.yml         # Конфигурация Docker Compose
+└── requirements.txt           # Production зависимости
 ```
 
-### Code Style
+### Стиль кода
 
-- **Formatting**: Black (line length 120)
-- **Linting**: flake8
-- **Type checking**: mypy
+- **Форматирование**: Black (длина строки 120)
+- **Линтинг**: flake8
+- **Проверка типов**: mypy
 - **Docstrings**: Google style
 
-## 🤝 Contributing
+## 🤝 Вклад в проект
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+1. Форкните репозиторий
+2. Создайте feature ветку (`git checkout -b feature/amazing-feature`)
+3. Закоммитьте изменения (`git commit -m 'feat: add amazing feature'`)
+4. Запушьте в ветку (`git push origin feature/amazing-feature`)
+5. Откройте Pull Request
 
-## 📄 License
+## 📄 Лицензия
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Этот проект лицензирован под лицензией MIT - см. файл [LICENSE](LICENSE) для деталей.
 
-## 👥 Authors
+## 👥 Авторы
 
-- **HSE ML Team** - *Initial work*
+- **HSE ML Team** - *Начальная работа*
 
-## 🙏 Acknowledgments
+## 🙏 Благодарности
 
-- WCAG 2.2 Guidelines
-- scikit-learn for K-means implementation
-- Pillow for image processing
-- BeautifulSoup for HTML parsing
+- Руководство WCAG 2.2
+- scikit-learn за реализацию K-means
+- Pillow за обработку изображений
+- BeautifulSoup за парсинг HTML
 
-## 📞 Support
+## 📞 Поддержка
 
-For issues and questions, please use [GitHub Issues](https://github.com/DaniilZebzeev/hse-ml-contrast-checker/issues).
+По вопросам и проблемам используйте [GitHub Issues](https://github.com/DaniilZebzeev/hse-ml-contrast-checker/issues).
 
 ---
 
-**Made with ❤️ for HSE Applied Machine Learning Course**
+**Создано для курса "Прикладные аспекты машинного обучения" ВШЭ**
