@@ -83,14 +83,14 @@ def main(slide_json, slide_index, bg_image, ml_method, k_colors, out_json, out_h
     """
     try:
         if verbose:
-            click.echo(f"📂 Loading slide from: {slide_json}")
-            click.echo(f"🤖 ML method: {ml_method}")
+            click.echo(f"Loading slide from: {slide_json}")
+            click.echo(f"ML method: {ml_method}")
             if bg_image:
-                click.echo(f"🖼️  Background image: {bg_image}")
+                click.echo(f"Background image: {bg_image}")
 
         # Analyze slide
         if verbose:
-            click.echo("🔍 Analyzing contrast...")
+            click.echo("Analyzing contrast...")
 
         result = analyze_slide(
             slide_json_path=slide_json,
@@ -108,7 +108,7 @@ def main(slide_json, slide_index, bg_image, ml_method, k_colors, out_json, out_h
             json.dump(result, f, ensure_ascii=False, indent=2)
 
         if verbose:
-            click.echo(f"💾 JSON saved to: {out_json_path}")
+            click.echo(f"JSON saved to: {out_json_path}")
 
         # Generate HTML report
         out_html_path = Path(out_html)
@@ -117,44 +117,44 @@ def main(slide_json, slide_index, bg_image, ml_method, k_colors, out_json, out_h
         generate_html_report(result, str(out_html_path))
 
         if verbose:
-            click.echo(f"📄 HTML report saved to: {out_html_path}")
+            click.echo(f"HTML report saved to: {out_html_path}")
 
         # Print summary
         click.echo()
-        click.secho("✓ Analysis complete!", fg='green', bold=True)
-        click.echo(f"  📊 Slide ID: {result['slide_id']}")
-        click.echo(f"  📝 Total entities: {result['summary']['total_entities']}")
-        click.echo(f"  ✅ Passed AA Normal: {result['summary']['passed_AA_normal']}")
-        click.echo(f"  ❌ Failed AA Normal: {result['summary']['failed_AA_normal']}")
+        click.secho("Analysis complete!", fg='green', bold=True)
+        click.echo(f"  Slide ID: {result['slide_id']}")
+        click.echo(f"  Total entities: {result['summary']['total_entities']}")
+        click.echo(f"  Passed AA Normal: {result['summary']['passed_AA_normal']}")
+        click.echo(f"  Failed AA Normal: {result['summary']['failed_AA_normal']}")
         click.echo()
-        click.echo(f"  📁 JSON: {out_json_path}")
-        click.echo(f"  🌐 HTML: {out_html_path}")
+        click.echo(f"  JSON: {out_json_path}")
+        click.echo(f"  HTML: {out_html_path}")
 
         # Exit code based on WCAG compliance
         if result['summary']['failed_AA_normal'] > 0:
             click.echo()
             click.secho(
-                f"⚠️  Warning: {result['summary']['failed_AA_normal']} entity(ies) failed WCAG AA Normal standard",
+                f"Warning: {result['summary']['failed_AA_normal']} entity(ies) failed WCAG AA Normal standard",
                 fg='yellow'
             )
             sys.exit(1)
 
     except FileNotFoundError as e:
-        click.secho(f"✗ Error: File not found - {e}", fg='red', err=True)
+        click.secho(f"Error: File not found - {e}", fg='red', err=True)
         if verbose:
             import traceback
             traceback.print_exc()
         sys.exit(2)
 
     except ValueError as e:
-        click.secho(f"✗ Error: Invalid data - {e}", fg='red', err=True)
+        click.secho(f"Error: Invalid data - {e}", fg='red', err=True)
         if verbose:
             import traceback
             traceback.print_exc()
         sys.exit(2)
 
     except Exception as e:
-        click.secho(f"✗ Error: {e}", fg='red', err=True)
+        click.secho(f"Error: {e}", fg='red', err=True)
         if verbose:
             import traceback
             traceback.print_exc()

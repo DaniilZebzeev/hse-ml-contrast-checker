@@ -139,7 +139,7 @@ def classify_wcag(ratio: float, font_size_px: float, font_weight: str) -> Dict[s
 
 
 def suggest_fixes(
-    contrast_ratio: float,
+    current_ratio: float,
     text_rgb: Tuple[int, int, int],
     bg_rgb: Tuple[int, int, int],
     font_size_px: float,
@@ -156,7 +156,7 @@ def suggest_fixes(
     5. Add text shadow/outline
 
     Args:
-        contrast_ratio: Current contrast ratio
+        current_ratio: Current contrast ratio
         text_rgb: Text color RGB tuple
         bg_rgb: Background color RGB tuple
         font_size_px: Font size in pixels
@@ -177,11 +177,11 @@ def suggest_fixes(
     suggestions = []
 
     # Determine target ratio based on current font
-    wcag_class = classify_wcag(contrast_ratio, font_size_px, font_weight)
+    wcag_class = classify_wcag(current_ratio, font_size_px, font_weight)
     is_large = wcag_class['is_large_text']
     target_ratio = 3.0 if is_large else 4.5
 
-    if contrast_ratio >= target_ratio:
+    if current_ratio >= target_ratio:
         return suggestions  # Already passes
 
     # 1. Invert text color
@@ -236,12 +236,12 @@ def suggest_fixes(
     if font_size_px < 24:
         # Calculate if current ratio would pass as large text
         large_text_threshold = 3.0
-        if contrast_ratio >= large_text_threshold:
+        if current_ratio >= large_text_threshold:
             suggestions.append({
                 'type': 'increase_font_size',
-                'description': f'Увеличить размер шрифта до ≥24px (порог AA large: 3:1, текущий: {round(contrast_ratio, 2)}:1)',
+                'description': f'Увеличить размер шрифта до ≥24px (порог AA large: 3:1, текущий: {round(current_ratio, 2)}:1)',
                 'new_value': '24px',
-                'expected_ratio': round(contrast_ratio, 2)
+                'expected_ratio': round(current_ratio, 2)
             })
 
     # 6. Add text shadow/outline (visual enhancement, doesn't affect measured contrast)
