@@ -277,7 +277,7 @@ hse-ml-contrast-checker/
 
 - https://github.com/JuliaPonomareva
 - https://github.com/VKristin
-- https://github.com/DaniilZebzeev?tab=following
+- https://github.com/DaniilZebzeev
 
 ## 🙏 Благодарности
 
