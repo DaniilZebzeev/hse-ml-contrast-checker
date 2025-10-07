@@ -1,0 +1,5 @@
+{
+  "id": "slide-002",
+  "base_color": "#4FAEFF26",
+  "content_html": "<div id=\"text-3\" class=\"entity\"><div class=\"entity__wrapper\" style=\"width: 600px; height: 120px; top: 100px; left: 50px;\"><span style=\"color: #ffffff; font-size: 32px; font-weight: bold;\">White text on image</span></div></div><div id=\"text-4\" class=\"entity\"><div class=\"entity__wrapper\" style=\"width: 500px; height: 100px; top: 300px; left: 50px;\"><span style=\"color: #000000; font-size: 18px;\">Black text </span><span style=\"color: #ff0000; font-size: 18px;\">with red highlight</span></div></div>"
+}

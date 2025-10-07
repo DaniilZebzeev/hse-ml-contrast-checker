@@ -1,0 +1,9 @@
+{
+  "id": "slide-003",
+  "base_color": "#f0f0f0",
+  "custom_theme": {
+    "primary_color": "#007bff",
+    "secondary_color": "#6c757d"
+  },
+  "content_html": "<div id=\"text-5\" class=\"entity\"><div class=\"entity__wrapper\" style=\"width: 700px; height: 150px; top: 50px; left: 50px; transform: translate(10px, 20px);\"><span style=\"color: #007bff; font-size: 36px; font-weight: 700;\">Primary Heading</span></div></div><div id=\"text-6\" class=\"entity\"><div class=\"entity__wrapper\" style=\"width: 600px; height: 80px; top: 250px; left: 50px;\"><span style=\"color: #333333; font-size: 16px;\">Normal paragraph text with </span><span style=\"color: #dc3545; font-size: 16px; font-weight: bold;\">important warning</span><span style=\"color: #333333; font-size: 16px;\"> message included.</span></div></div><div id=\"text-7\" class=\"entity\"><div class=\"entity__wrapper\" style=\"width: 400px; height: 60px; top: 400px; left: 50px;\"><span style=\"color: rgba(0, 123, 255, 0.5); font-size: 14px;\">Semi-transparent blue text</span></div></div>"
+}

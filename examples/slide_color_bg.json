@@ -1,0 +1,5 @@
+{
+  "id": "slide-001",
+  "base_color": "#ffffff",
+  "content_html": "<div id=\"text-1\" class=\"entity\"><div class=\"entity__wrapper\" style=\"width: 500px; height: 100px; top: 50px; left: 100px;\"><span style=\"color: #000000; font-size: 24px;\">Hello World</span></div></div><div id=\"text-2\" class=\"entity\"><div class=\"entity__wrapper\" style=\"width: 400px; height: 80px; top: 200px; left: 100px;\"><span style=\"color: #777777; font-size: 14px;\">Low contrast text example</span></div></div>"
+}

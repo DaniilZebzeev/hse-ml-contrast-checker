@@ -1,0 +1,63 @@
+{
+  "slide_id": 708252,
+  "background": {
+    "source": "colors_only",
+    "effective_rgb": [
+      229,
+      243,
+      255
+    ]
+  },
+  "entities": [
+    {
+      "id": "text-tXzpS0Fak9",
+      "text_colors": [
+        {
+          "css": "#000000",
+          "rgb": [
+            0,
+            0,
+            0
+          ],
+          "coverage": 1.0
+        }
+      ],
+      "font": {
+        "size_px": 52.0,
+        "weight": "normal"
+      },
+      "bg_under_entity": {
+        "method": "composited_color",
+        "colors": [
+          {
+            "rgb": [
+              229,
+              243,
+              255
+            ],
+            "weight": 1.0
+          }
+        ]
+      },
+      "contrast": {
+        "min_ratio": 18.5958,
+        "by_text_color": [
+          {
+            "css": "#000000",
+            "rgb": [
+              0,
+              0,
+              0
+            ],
+            "ratio": 18.5958
+          }
+        ],
+        "wcag": {
+          "AA_normal": true,
+          "AA_large": true,
+          "AAA": true
+        }
+      }
+    }
+  ]
+}

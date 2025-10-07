@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  contrast-checker:
+    build: .
+    image: hse-contrast-checker:latest
+    container_name: hse-contrast-checker
+    volumes:
+      - ./examples:/app/examples:ro
+      - ./output:/app/output
+    environment:
+      - PYTHONUNBUFFERED=1
+    # Override command in docker-compose run
+    # Example: docker-compose run contrast-checker --slide-json /app/examples/slide_color_bg.json
