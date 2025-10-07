@@ -275,7 +275,9 @@ hse-ml-contrast-checker/
 
 ## 👥 Авторы
 
-- **HSE ML Team** - *Начальная работа*
+- https://github.com/JuliaPonomareva
+- https://github.com/VKristin
+- https://github.com/DaniilZebzeev?tab=following
 
 ## 🙏 Благодарности
 
