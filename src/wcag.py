@@ -227,7 +227,11 @@ def suggest_fixes(
 
     # 4. Lighten background
     for factor in [1.2, 1.4, 1.6, 1.8]:
-        lightened_bg = (min(255, int(bg_rgb[0] * factor)), min(255, int(bg_rgb[1] * factor)), min(255, int(bg_rgb[2] * factor)))
+        lightened_bg = (
+            min(255, int(bg_rgb[0] * factor)),
+            min(255, int(bg_rgb[1] * factor)),
+            min(255, int(bg_rgb[2] * factor)),
+        )
         light_ratio = contrast_ratio(text_rgb, lightened_bg)
         if light_ratio >= target_ratio:
             suggestions.append(

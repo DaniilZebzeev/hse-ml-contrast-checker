@@ -73,7 +73,7 @@ def test_classify_wcag_bold_large():
 def test_suggest_fixes_returns_suggestions():
     """Test that suggest_fixes returns suggestions for low contrast."""
     suggestions = suggest_fixes(
-        contrast_ratio=2.0, text_rgb=(100, 100, 100), bg_rgb=(150, 150, 150), font_size_px=16, font_weight="normal"
+        current_ratio=2.0, text_rgb=(100, 100, 100), bg_rgb=(150, 150, 150), font_size_px=16, font_weight="normal"
     )
 
     assert len(suggestions) > 0
@@ -85,7 +85,7 @@ def test_suggest_fixes_returns_suggestions():
 def test_suggest_fixes_empty_for_good_contrast():
     """Test that suggest_fixes returns empty for good contrast."""
     suggestions = suggest_fixes(
-        contrast_ratio=7.0,  # Good contrast
+        current_ratio=7.0,  # Good contrast
         text_rgb=(0, 0, 0),
         bg_rgb=(255, 255, 255),
         font_size_px=16,
