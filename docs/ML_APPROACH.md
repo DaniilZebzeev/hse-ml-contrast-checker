@@ -1,270 +1,270 @@
-# 🤖 Machine Learning Approach
+# 🤖 Подход машинного обучения
 
-This document explains the ML algorithms used in the HSE ML Contrast Checker for extracting dominant colors from background images.
+Этот документ объясняет ML алгоритмы, используемые в HSE ML Contrast Checker для извлечения доминирующих цветов из фоновых изображений.
 
-## Table of Contents
+## Содержание
 
-- [Overview](#overview)
-- [Median-cut Algorithm](#median-cut-algorithm)
-- [K-means Clustering](#k-means-clustering)
-- [Comparison](#comparison)
-- [Why Not Deep Learning?](#why-not-deep-learning)
-- [Implementation Details](#implementation-details)
+- [Обзор](#обзор)
+- [Алгоритм Median-cut](#алгоритм-median-cut)
+- [K-means кластеризация](#k-means-кластеризация)
+- [Сравнение](#сравнение)
+- [Почему не глубокое обучение?](#почему-не-глубокое-обучение)
+- [Детали реализации](#детали-реализации)
 
-## Overview
+## Обзор
 
-The core challenge in contrast analysis is determining the "effective background color" when the background is an image rather than a solid color. This requires **color quantization** - reducing the image's color palette to k dominant colors.
+Основная проблема анализа контрастности — определение "эффективного цвета фона", когда фоном является изображение, а не сплошной цвет. Это требует **квантизации цветов** — сокращения цветовой палитры изображения до k доминирующих цветов.
 
-Both algorithms implemented in this project are **unsupervised learning** methods that learn the optimal color palette directly from the image data without any labeled training set.
+Оба алгоритма, реализованные в этом проекте, являются методами **обучения без учителя**, которые изучают оптимальную цветовую палитру непосредственно из данных изображения без каких-либо размеченных обучающих данных.
 
-## Median-cut Algorithm
+## Алгоритм Median-cut
 
-### Theory
+### Теория
 
-Median-cut is a classic palette quantization algorithm first proposed by Paul Heckbert in 1982. It works by recursively subdividing the color space.
+Median-cut — классический алгоритм квантизации палитры, впервые предложенный Полом Хекбертом в 1982 году. Он работает путем рекурсивного разделения цветового пространства.
 
-### Algorithm Steps
+### Шаги алгоритма
 
-1. **Initialize**: Create a single "bucket" containing all pixels
-2. **Repeat k times**:
-   - Find the bucket with the largest range in any color dimension (R, G, or B)
-   - Split that bucket at the median value of that dimension
-3. **Result**: k buckets, each representing a dominant color
+1. **Инициализация**: Создание одного "ведра", содержащего все пиксели
+2. **Повтор k раз**:
+   - Найти ведро с наибольшим диапазоном в любом измерении цвета (R, G или B)
+   - Разделить это ведро по медианному значению этого измерения
+3. **Результат**: k ведер, каждое представляет доминирующий цвет
 
-### Mathematical Formulation
+### Математическая формулировка
 
-For a set of pixels P in RGB space:
+Для набора пикселей P в пространстве RGB:
 
 ```
-1. Range calculation:
+1. Вычисление диапазона:
    range_r = max(R) - min(R)
    range_g = max(G) - min(G)
    range_b = max(B) - min(B)
 
-2. Split dimension:
+2. Измерение разделения:
    d = argmax(range_r, range_g, range_b)
 
-3. Split point:
+3. Точка разделения:
    median_value = median({p[d] | p ∈ P})
 
-4. Partition:
+4. Разбиение:
    P_left = {p ∈ P | p[d] ≤ median_value}
    P_right = {p ∈ P | p[d] > median_value}
 ```
 
-### Complexity Analysis
+### Анализ сложности
 
-- **Time**: O(n log k), where n = number of pixels, k = number of colors
-- **Space**: O(n)
-- **Deterministic**: Yes (same input → same output)
+- **Время**: O(n log k), где n = количество пикселей, k = количество цветов
+- **Память**: O(n)
+- **Детерминированность**: Да (одинаковый вход → одинаковый выход)
 
-### Pros & Cons
+### Плюсы и минусы
 
-**Advantages**:
-- ⚡ Fast execution
-- 📊 Deterministic results
-- 💾 Memory efficient
-- 🎯 Good for images with distinct color regions
+**Преимущества**:
+- ⚡ Быстрое выполнение
+- 📊 Детерминированные результаты
+- 💾 Эффективное использование памяти
+- 🎯 Хорош для изображений с различными цветовыми областями
 
-**Disadvantages**:
-- ❌ May miss important small-area colors
-- ❌ Less accurate for complex gradients
-- ❌ Doesn't optimize for perceptual color distance
+**Недостатки**:
+- ❌ Может упустить важные цвета малой площади
+- ❌ Менее точен для сложных градиентов
+- ❌ Не оптимизируется для перцептивного расстояния цветов
 
-## K-means Clustering
+## K-means кластеризация
 
-### Theory
+### Теория
 
-K-means is a classic unsupervised learning algorithm that partitions data into k clusters by minimizing within-cluster variance. For color quantization, each cluster center represents a dominant color.
+K-means — классический алгоритм обучения без учителя, который разбивает данные на k кластеров, минимизируя внутрикластерную дисперсию. Для квантизации цвета каждый центр кластера представляет доминирующий цвет.
 
-### Algorithm Steps
+### Шаги алгоритма
 
-1. **Initialize**: Randomly select k cluster centers in RGB space
-2. **Repeat until convergence**:
-   - **Assignment**: Assign each pixel to nearest cluster center
-   - **Update**: Recalculate cluster centers as mean of assigned pixels
-3. **Result**: k cluster centers as dominant colors
+1. **Инициализация**: Случайный выбор k центров кластеров в пространстве RGB
+2. **Повтор до сходимости**:
+   - **Назначение**: Назначить каждый пиксель ближайшему центру кластера
+   - **Обновление**: Пересчитать центры кластеров как среднее назначенных пикселей
+3. **Результат**: k центров кластеров как доминирующие цвета
 
-### Mathematical Formulation
+### Математическая формулировка
 
-**Objective**: Minimize within-cluster sum of squares (WCSS):
+**Цель**: Минимизировать внутрикластерную сумму квадратов (WCSS):
 
 ```
 J = Σ(i=1 to k) Σ(x ∈ C_i) ||x - μ_i||²
 
-where:
-- k = number of clusters
-- C_i = set of pixels in cluster i
-- μ_i = cluster center for cluster i
-- ||·|| = Euclidean distance in RGB space
+где:
+- k = количество кластеров
+- C_i = набор пикселей в кластере i
+- μ_i = центр кластера для кластера i
+- ||·|| = Евклидово расстояние в пространстве RGB
 ```
 
-**Update Rules**:
+**Правила обновления**:
 
 ```
-Assignment step:
+Шаг назначения:
   C_i^(t) = {x | ||x - μ_i^(t)|| ≤ ||x - μ_j^(t)|| ∀j}
 
-Update step:
+Шаг обновления:
   μ_i^(t+1) = (1/|C_i^(t)|) Σ(x ∈ C_i^(t)) x
 ```
 
-### Complexity Analysis
+### Анализ сложности
 
-- **Time**: O(n · k · i), where i = number of iterations (typically 10-50)
-- **Space**: O(n + k)
-- **Deterministic**: No (depends on random initialization; we use fixed seed)
+- **Время**: O(n · k · i), где i = количество итераций (обычно 10-50)
+- **Память**: O(n + k)
+- **Детерминированность**: Нет (зависит от случайной инициализации; мы используем фиксированное зерно)
 
-### Pros & Cons
+### Плюсы и минусы
 
-**Advantages**:
-- ✅ More accurate color representation
-- ✅ Optimizes for perceptual clustering
-- ✅ Better for complex images with gradients
-- ✅ Widely used and well-understood
+**Преимущества**:
+- ✅ Более точное представление цветов
+- ✅ Оптимизируется для перцептивной кластеризации
+- ✅ Лучше для сложных изображений с градиентами
+- ✅ Широко используется и хорошо изучен
 
-**Disadvantages**:
-- ⏱️ Slower than median-cut
-- 🔀 Requires random initialization (we fix seed for reproducibility)
-- 💾 Higher memory usage
-- 🔄 May need multiple runs for best results
+**Недостатки**:
+- ⏱️ Медленнее median-cut
+- 🔀 Требует случайной инициализации (мы фиксируем зерно для воспроизводимости)
+- 💾 Более высокое использование памяти
+- 🔄 Может потребовать нескольких запусков для лучших результатов
 
-## Comparison
+## Сравнение
 
-| Metric | Median-cut | K-means |
-|--------|------------|---------|
-| **Speed** | ⚡⚡⚡ Fast | ⚡⚡ Moderate |
-| **Accuracy** | ⭐⭐⭐ Good | ⭐⭐⭐⭐ Excellent |
-| **Memory** | 💾 Low | 💾💾 Moderate |
-| **Deterministic** | ✅ Yes | ⚠️ With fixed seed |
-| **Best for** | Simple backgrounds | Complex images |
+| Метрика | Median-cut | K-means |
+|---------|------------|---------|
+| **Скорость** | ⚡⚡⚡ Быстро | ⚡⚡ Умеренно |
+| **Точность** | ⭐⭐⭐ Хорошо | ⭐⭐⭐⭐ Отлично |
+| **Память** | 💾 Низко | 💾💾 Умеренно |
+| **Детерминированность** | ✅ Да | ⚠️ С фиксированным зерном |
+| **Лучше для** | Простые фоны | Сложные изображения |
 
-### Benchmark Results
+### Результаты бенчмарков
 
-Tested on 100 real presentation backgrounds (800x600px):
+Протестировано на 100 реальных фонах презентаций (800x600px):
 
-| Algorithm | Avg Time | Color Accuracy* | Memory Usage |
-|-----------|----------|-----------------|--------------|
-| Median-cut | 45ms | 87% | 12MB |
-| K-means | 180ms | 94% | 28MB |
+| Алгоритм | Среднее время | Точность цвета* | Использование памяти |
+|----------|---------------|-----------------|---------------------|
+| Median-cut | 45мс | 87% | 12МБ |
+| K-means | 180мс | 94% | 28МБ |
 
-*Accuracy measured as % agreement with human-labeled dominant colors
+*Точность измеряется как % совпадения с доминирующими цветами, размеченными человеком
 
-## Why Not Deep Learning?
+## Почему не глубокое обучение?
 
-While CNNs could theoretically extract dominant colors, they're **overkill** for this task:
+Хотя CNN теоретически могли бы извлекать доминирующие цвета, это **избыточно** для этой задачи:
 
-### Reasons Against DL
+### Причины против DL
 
-1. **No labeled data**: Unsupervised classical ML is perfect here
-2. **Overkill**: Simple color statistics don't need neural networks
-3. **Interpretability**: Median-cut and K-means are explainable
-4. **Speed**: Classical ML is 100x faster
-5. **Deployment**: No GPU required
-6. **Reproducibility**: Deterministic results (with fixed seed)
+1. **Нет размеченных данных**: Классическое ML без учителя здесь идеально
+2. **Избыточность**: Простая статистика цветов не требует нейронных сетей
+3. **Интерпретируемость**: Median-cut и K-means объяснимы
+4. **Скорость**: Классическое ML в 100 раз быстрее
+5. **Развертывание**: GPU не требуется
+6. **Воспроизводимость**: Детерминированные результаты (с фиксированным зерном)
 
-### When DL *Would* Be Appropriate
+### Когда DL *был бы* уместен
 
-- Semantic segmentation (e.g., "extract text region backgrounds only")
-- Perceptual importance weighting (e.g., "focus on human faces")
-- Content-aware color extraction (e.g., "ignore watermarks")
+- Семантическая сегментация (например, "извлечь только фоны текстовых областей")
+- Взвешивание перцептивной важности (например, "фокус на человеческих лицах")
+- Извлечение цвета с учетом содержания (например, "игнорировать водяные знаки")
 
-For simple color quantization, classical ML wins!
+Для простой квантизации цветов классическое ML побеждает!
 
-## Implementation Details
+## Детали реализации
 
-### Preprocessing
+### Предобработка
 
-Both algorithms include preprocessing for performance:
+Оба алгоритма включают предобработку для производительности:
 
 ```python
-# Resize image to 150x150 before processing
+# Изменение размера изображения до 150x150 перед обработкой
 max_size = 150
 region = region.resize((max_size, max_size), Image.LANCZOS)
 ```
 
-**Why resize?**
-- 150x150 = 22,500 pixels (vs. ~480,000 for 800x600)
-- 20x speedup with minimal accuracy loss
-- Maintains aspect ratio
+**Зачем изменять размер?**
+- 150x150 = 22,500 пикселей (против ~480,000 для 800x600)
+- Ускорение в 20 раз с минимальной потерей точности
+- Сохраняет соотношение сторон
 
-### Median-cut Implementation
+### Реализация Median-cut
 
-Uses Pillow's built-in ADAPTIVE palette:
+Использует встроенную ADAPTIVE палитру Pillow:
 
 ```python
 pal_img = region.convert('P', palette=Image.Palette.ADAPTIVE, colors=k)
 ```
 
-This internally implements median-cut algorithm optimized in C.
+Это внутренне реализует алгоритм median-cut, оптимизированный на C.
 
-### K-means Implementation
+### Реализация K-means
 
-Uses scikit-learn's `KMeans`:
+Использует `KMeans` из scikit-learn:
 
 ```python
 kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
 kmeans.fit(pixels)
 ```
 
-**Key parameters**:
-- `random_state=42`: Fixed seed for reproducibility
-- `n_init=10`: Run 10 times with different seeds, keep best
-- `n_clusters=k`: Number of dominant colors (default: 5)
+**Ключевые параметры**:
+- `random_state=42`: Фиксированное зерно для воспроизводимости
+- `n_init=10`: Запуск 10 раз с разными зернами, сохранение лучшего
+- `n_clusters=k`: Количество доминирующих цветов (по умолчанию: 5)
 
-### Weight Calculation
+### Вычисление весов
 
-Both algorithms return colors with weights (proportion of pixels):
+Оба алгоритма возвращают цвета с весами (доля пикселей):
 
 ```python
 weight = cluster_size / total_pixels
 ```
 
-Results sorted by weight (descending), so `colors[0]` is most dominant.
+Результаты отсортированы по весу (по убыванию), так что `colors[0]` — самый доминирующий.
 
-## Recommendations
+## Рекомендации
 
-### When to Use Median-cut
+### Когда использовать Median-cut
 
-- ✅ Real-time applications
-- ✅ Simple, flat-color backgrounds
-- ✅ Resource-constrained environments
-- ✅ Batch processing of many images
+- ✅ Приложения реального времени
+- ✅ Простые фоны с плоскими цветами
+- ✅ Среды с ограниченными ресурсами
+- ✅ Пакетная обработка множества изображений
 
-### When to Use K-means
+### Когда использовать K-means
 
-- ✅ Complex photographic backgrounds
-- ✅ Gradients and textures
-- ✅ When accuracy > speed
-- ✅ Final analysis for reports
+- ✅ Сложные фотографические фоны
+- ✅ Градиенты и текстуры
+- ✅ Когда точность > скорости
+- ✅ Финальный анализ для отчетов
 
-### Hybrid Approach
+### Гибридный подход
 
-For production systems, consider:
+Для производственных систем рассмотрите:
 
-1. Use **median-cut** for initial/preview analysis
-2. Use **K-means** for final published results
-3. Cache results to avoid recomputation
+1. Использовать **median-cut** для начального/предварительного анализа
+2. Использовать **K-means** для окончательных опубликованных результатов
+3. Кэшировать результаты во избежание повторных вычислений
 
-## Future Improvements
+## Будущие улучшения
 
-Potential enhancements:
+Потенциальные усовершенствования:
 
-1. **Gaussian Mixture Models**: Better than K-means for non-spherical clusters
-2. **DBSCAN**: Adaptive number of clusters
-3. **LAB Color Space**: More perceptually uniform than RGB
-4. **Spatial Weighting**: Weight regions under text more heavily
-5. **Progressive K-means**: Start with k=2, progressively refine
+1. **Gaussian Mixture Models**: Лучше K-means для несферических кластеров
+2. **DBSCAN**: Адаптивное количество кластеров
+3. **Цветовое пространство LAB**: Более перцептивно-однородное, чем RGB
+4. **Пространственное взвешивание**: Большой вес областям под текстом
+5. **Прогрессивный K-means**: Начать с k=2, постепенно уточнять
 
-## References
+## Ссылки
 
 1. Heckbert, P. (1982). "Color image quantization for frame buffer display"
 2. MacQueen, J. (1967). "Some methods for classification and analysis of multivariate observations"
 3. Arthur, D. & Vassilvitskii, S. (2007). "k-means++: The advantages of careful seeding"
-4. WCAG 2.2 Color Contrast Guidelines
+4. WCAG 2.2 Руководство по контрастности цветов
 
 ---
 
-**Author**: HSE ML Team
-**Course**: Applied Aspects of Machine Learning
-**Date**: 2025
+**Авторы**: HSE ML Team
+**Курс**: Прикладные аспекты машинного обучения
+**Дата**: 2025

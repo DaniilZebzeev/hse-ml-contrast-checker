@@ -1,164 +1,164 @@
-# 🏗️ System Architecture
+# 🏗️ Архитектура системы
 
-## Overview
+## Обзор
 
-HSE ML Contrast Checker follows a **modular, layered architecture** designed for maintainability, testability, and extensibility.
+HSE ML Contrast Checker следует **модульной, слоистой архитектуре**, разработанной для поддерживаемости, тестируемости и расширяемости.
 
-## High-Level Architecture
+## Высокоуровневая архитектура
 
 ```
 ┌───────────────────────────────────────────────────┐
-│                  User Interface                    │
-│              (CLI via click library)               │
+│              Пользовательский интерфейс            │
+│              (CLI через библиотеку click)          │
 └─────────────────────┬─────────────────────────────┘
                       │
 ┌─────────────────────▼─────────────────────────────┐
-│              Application Layer                     │
+│              Слой приложения                       │
 │           (contrast_checker.py)                    │
-│    • Orchestrates analysis workflow                │
-│    • Coordinates between modules                   │
-│    • Handles JSON I/O                              │
+│    • Оркестрирует рабочий процесс анализа          │
+│    • Координирует между модулями                   │
+│    • Обрабатывает JSON I/O                         │
 └──┬────────────┬────────────┬────────────┬─────────┘
    │            │            │            │
 ┌──▼──────┐ ┌──▼──────┐ ┌──▼──────┐ ┌──▼──────┐
-│ Color   │ │  HTML   │ │ Image   │ │  WCAG   │
-│ Parser  │ │ Parser  │ │Analyzer │ │Calculator│
+│ Парсер  │ │  HTML   │ │Анализ.  │ │  WCAG   │
+│ цветов  │ │ парсер  │ │изображ. │ │Калькул. │
 └─────────┘ └─────────┘ └─────────┘ └─────────┘
-   Domain Layer (Business Logic)
+   Доменный слой (Бизнес-логика)
 ```
 
-## Layer Breakdown
+## Разбор по слоям
 
-### 1. Presentation Layer
+### 1. Слой представления
 
-**Module**: `cli.py`
+**Модуль**: `cli.py`
 
-**Responsibilities**:
-- Parse command-line arguments
-- Validate input files
-- Display progress and results
-- Handle error formatting
+**Обязанности**:
+- Парсинг аргументов командной строки
+- Валидация входных файлов
+- Отображение прогресса и результатов
+- Обработка форматирования ошибок
 
-**Technology**: `click` library
+**Технология**: библиотека `click`
 
-**Key Functions**:
-- `main()`: Entry point for CLI
+**Ключевые функции**:
+- `main()`: Точка входа для CLI
 
-### 2. Application Layer
+### 2. Слой приложения
 
-**Module**: `contrast_checker.py`
+**Модуль**: `contrast_checker.py`
 
-**Responsibilities**:
-- Orchestrate analysis workflow
-- Coordinate between domain modules
-- Aggregate results
-- Handle JSON serialization
+**Обязанности**:
+- Оркестрация рабочего процесса анализа
+- Координация между доменными модулями
+- Агрегация результатов
+- Обработка JSON сериализации
 
-**Key Functions**:
-- `analyze_slide()`: Main analysis orchestrator
-- `determine_effective_background()`: Background color resolution
-- `analyze_entity_contrast()`: Per-entity analysis
+**Ключевые функции**:
+- `analyze_slide()`: Главный оркестратор анализа
+- `determine_effective_background()`: Определение цвета фона
+- `analyze_entity_contrast()`: Анализ для каждого элемента
 
-### 3. Domain Layer
+### 3. Доменный слой
 
-#### 3.1 Color Parser (`color_parser.py`)
+#### 3.1 Парсер цветов (`color_parser.py`)
 
-**Purpose**: Parse and manipulate CSS colors
+**Назначение**: Парсинг и манипуляции с CSS цветами
 
-**Key Classes**:
-- `RGBA`: Color representation with alpha
+**Ключевые классы**:
+- `RGBA`: Представление цвета с альфа-каналом
 
-**Key Functions**:
-- `parse_css_color()`: Parse hex/rgb/rgba/hsl/hsla
-- `blend_over()`: Alpha compositing
-- `hsl_to_rgb()`: Color space conversion
-- `parse_font_size_px()`: Font size normalization
+**Ключевые функции**:
+- `parse_css_color()`: Парсинг hex/rgb/rgba/hsl/hsla
+- `blend_over()`: Альфа-композитинг
+- `hsl_to_rgb()`: Конвертация цветовых пространств
+- `parse_font_size_px()`: Нормализация размера шрифта
 
-**Dependencies**: None (pure Python)
+**Зависимости**: Нет (чистый Python)
 
-#### 3.2 HTML Parser (`html_parser.py`)
+#### 3.2 HTML парсер (`html_parser.py`)
 
-**Purpose**: Extract text entities from HTML
+**Назначение**: Извлечение текстовых элементов из HTML
 
-**Key Functions**:
-- `extract_entities()`: Find all text entities
-- `extract_font_info()`: Parse font properties
-- `extract_geometry()`: Parse positioning
+**Ключевые функции**:
+- `extract_entities()`: Поиск всех текстовых элементов
+- `extract_font_info()`: Парсинг свойств шрифта
+- `extract_geometry()`: Парсинг позиционирования
 
-**Dependencies**: `BeautifulSoup4`, `lxml`
+**Зависимости**: `BeautifulSoup4`, `lxml`
 
-**Design Pattern**: Strategy (different parsers for different HTML structures)
+**Паттерн проектирования**: Стратегия (разные парсеры для разных HTML структур)
 
-#### 3.3 Image Analyzer (`image_analyzer.py`)
+#### 3.3 Анализатор изображений (`image_analyzer.py`)
 
-**Purpose**: ML-based dominant color extraction
+**Назначение**: ML-извлечение доминирующих цветов
 
-**Key Functions**:
-- `dominant_colors_mediancut()`: Median-cut algorithm
-- `dominant_colors_kmeans()`: K-means clustering
-- `analyze_image_region()`: Region-specific analysis
+**Ключевые функции**:
+- `dominant_colors_mediancut()`: Алгоритм median-cut
+- `dominant_colors_kmeans()`: K-means кластеризация
+- `analyze_image_region()`: Анализ конкретного региона
 
-**Dependencies**: `Pillow`, `scikit-learn`, `numpy`
+**Зависимости**: `Pillow`, `scikit-learn`, `numpy`
 
-**Design Pattern**: Strategy (interchangeable ML algorithms)
+**Паттерн проектирования**: Стратегия (взаимозаменяемые ML алгоритмы)
 
-#### 3.4 WCAG Calculator (`wcag.py`)
+#### 3.4 WCAG калькулятор (`wcag.py`)
 
-**Purpose**: WCAG 2.2 contrast calculations
+**Назначение**: Расчеты контрастности WCAG 2.2
 
-**Key Functions**:
-- `relative_luminance()`: Calculate color luminance
-- `contrast_ratio()`: Calculate contrast ratio
-- `classify_wcag()`: Determine WCAG level
-- `suggest_fixes()`: Generate improvement suggestions
+**Ключевые функции**:
+- `relative_luminance()`: Расчет яркости цвета
+- `contrast_ratio()`: Расчет коэффициента контрастности
+- `classify_wcag()`: Определение уровня WCAG
+- `suggest_fixes()`: Генерация рекомендаций по улучшению
 
-**Dependencies**: None (pure Python + math)
+**Зависимости**: Нет (чистый Python + math)
 
-**Design Pattern**: Utility functions (stateless)
+**Паттерн проектирования**: Утилитарные функции (без состояния)
 
-### 4. Reporting Layer
+### 4. Слой отчетности
 
-**Module**: `report_generator.py`
+**Модуль**: `report_generator.py`
 
-**Responsibilities**:
-- Generate HTML reports
-- Visualize color combinations
-- Format WCAG badges
-- Present suggestions
+**Обязанности**:
+- Генерация HTML отчетов
+- Визуализация цветовых комбинаций
+- Форматирование WCAG значков
+- Представление рекомендаций
 
-**Output**: Static HTML file
+**Вывод**: Статический HTML файл
 
-## Data Flow
+## Поток данных
 
 ```
-1. User Input (JSON + optional image)
+1. Пользовательский ввод (JSON + опциональное изображение)
    ↓
-2. CLI validates and parses arguments
+2. CLI валидирует и парсит аргументы
    ↓
 3. contrast_checker.analyze_slide()
-   ├─→ Load JSON slide data
-   ├─→ Load background image (if provided)
-   ├─→ Determine effective background color
-   │   ├─→ If base_color: parse_css_color()
-   │   └─→ If image: dominant_colors_*(image, method)
-   ├─→ Extract HTML entities
+   ├─→ Загрузка JSON данных слайда
+   ├─→ Загрузка фонового изображения (если есть)
+   ├─→ Определение эффективного цвета фона
+   │   ├─→ Если base_color: parse_css_color()
+   │   └─→ Если изображение: dominant_colors_*(image, method)
+   ├─→ Извлечение HTML элементов
    │   └─→ html_parser.extract_entities(html)
-   └─→ For each entity:
-       ├─→ Extract font info
-       ├─→ Extract text colors (weighted)
-       ├─→ Calculate contrasts
+   └─→ Для каждого элемента:
+       ├─→ Извлечение информации о шрифте
+       ├─→ Извлечение цветов текста (взвешенных)
+       ├─→ Расчет контрастности
        │   └─→ wcag.contrast_ratio(text, bg)
-       ├─→ Classify WCAG levels
+       ├─→ Классификация уровней WCAG
        │   └─→ wcag.classify_wcag(ratio, size, weight)
-       └─→ Generate suggestions (if failed)
+       └─→ Генерация рекомендаций (если провал)
            └─→ wcag.suggest_fixes(...)
    ↓
-4. Aggregate results
+4. Агрегация результатов
    ↓
-5. Output JSON and HTML reports
+5. Вывод JSON и HTML отчетов
 ```
 
-## Module Dependencies
+## Зависимости модулей
 
 ```
 cli.py
@@ -170,21 +170,21 @@ cli.py
       └─→ wcag.py
 
 report_generator.py
-  (no internal dependencies)
+  (нет внутренних зависимостей)
 ```
 
-**Dependency Rules**:
-- ✅ Domain modules can depend on other domain modules
-- ✅ Application layer can depend on domain layer
-- ✅ Presentation layer can depend on application layer
-- ❌ No circular dependencies
-- ❌ Domain modules should NOT depend on application layer
+**Правила зависимостей**:
+- ✅ Доменные модули могут зависеть от других доменных модулей
+- ✅ Слой приложения может зависеть от доменного слоя
+- ✅ Слой представления может зависеть от слоя приложения
+- ❌ Нет циклических зависимостей
+- ❌ Доменные модули НЕ должны зависеть от слоя приложения
 
-## Design Patterns
+## Паттерны проектирования
 
-### Strategy Pattern
+### Паттерн Стратегия
 
-Used for **ML algorithm selection**:
+Используется для **выбора ML алгоритма**:
 
 ```python
 if method == 'kmeans':
@@ -193,183 +193,183 @@ else:
     colors = dominant_colors_mediancut(img, k=k)
 ```
 
-**Benefits**:
-- Easy to add new ML algorithms
-- Runtime algorithm switching
-- Testable in isolation
+**Преимущества**:
+- Легко добавлять новые ML алгоритмы
+- Переключение алгоритма во время выполнения
+- Тестируемость в изоляции
 
-### Factory Pattern
+### Паттерн Фабрика
 
-Implicit in `parse_css_color()`:
+Неявно в `parse_css_color()`:
 
 ```python
 def parse_css_color(color: str) -> RGBA:
     if color.startswith('#'):
-        # Hex parser
+        # Парсер HEX
     elif 'rgb' in color:
-        # RGB parser
+        # Парсер RGB
     elif 'hsl' in color:
-        # HSL parser
+        # Парсер HSL
 ```
 
-**Benefits**:
-- Single entry point for all color formats
-- Extensible to new formats
+**Преимущества**:
+- Единая точка входа для всех форматов цветов
+- Расширяемость для новых форматов
 
-### Facade Pattern
+### Паттерн Фасад
 
-`contrast_checker.analyze_slide()` acts as a **facade**:
+`contrast_checker.analyze_slide()` действует как **фасад**:
 
 ```python
 def analyze_slide(...):
-    # Hides complexity of coordinating:
-    # - Color parsing
-    # - HTML parsing
-    # - ML analysis
-    # - WCAG calculation
+    # Скрывает сложность координации:
+    # - Парсинг цветов
+    # - Парсинг HTML
+    # - ML анализ
+    # - Расчет WCAG
 ```
 
-**Benefits**:
-- Simple API for complex operations
-- Reduced coupling in CLI layer
+**Преимущества**:
+- Простой API для сложных операций
+- Уменьшенная связность в слое CLI
 
-## Testing Strategy
+## Стратегия тестирования
 
-### Unit Tests
+### Модульные тесты
 
-Each domain module has independent unit tests:
+Каждый доменный модуль имеет независимые модульные тесты:
 
-- `test_color_parser.py`: Pure functions, no dependencies
-- `test_wcag.py`: Mathematical calculations
-- `test_html_parser.py`: BeautifulSoup usage
-- `test_image_analyzer.py`: ML algorithms (with fixtures)
+- `test_color_parser.py`: Чистые функции, без зависимостей
+- `test_wcag.py`: Математические расчеты
+- `test_html_parser.py`: Использование BeautifulSoup
+- `test_image_analyzer.py`: ML алгоритмы (с фикстурами)
 
-**Coverage Target**: > 80%
+**Цель покрытия**: > 80%
 
-### Integration Tests
+### Интеграционные тесты
 
-Test interactions between modules:
+Тестирование взаимодействий между модулями:
 
-- Color parsing → WCAG calculation
-- HTML parsing → Font extraction
-- Image analysis → Background determination
+- Парсинг цветов → расчет WCAG
+- Парсинг HTML → извлечение шрифта
+- Анализ изображения → определение фона
 
-### End-to-End Tests
+### Сквозные тесты
 
-Full CLI invocations with example files:
+Полные вызовы CLI с примерами файлов:
 
 ```bash
 python -m src.cli --slide-json examples/slide_color_bg.json
 ```
 
-## Error Handling
+## Обработка ошибок
 
-### Error Propagation
+### Распространение ошибок
 
 ```
 CLI
- └─→ catch & format all errors
-     └─→ Application Layer
-         └─→ raise specific exceptions
-             └─→ Domain Layer
-                 └─→ raise ValueError/TypeError
+ └─→ перехват и форматирование всех ошибок
+     └─→ Слой приложения
+         └─→ выброс специфичных исключений
+             └─→ Доменный слой
+                 └─→ выброс ValueError/TypeError
 ```
 
-### Error Types
+### Типы ошибок
 
-- `FileNotFoundError`: Missing input files
-- `ValueError`: Invalid JSON, malformed colors
-- `TypeError`: Wrong parameter types
+- `FileNotFoundError`: Отсутствующие входные файлы
+- `ValueError`: Невалидный JSON, некорректные цвета
+- `TypeError`: Неверные типы параметров
 
-## Performance Considerations
+## Соображения производительности
 
-### Bottlenecks
+### Узкие места
 
-1. **Image loading**: Mitigated by resizing to 150x150
-2. **K-means**: Slower than median-cut; user chooses
-3. **HTML parsing**: BeautifulSoup is fast enough for slides
+1. **Загрузка изображений**: Смягчается изменением размера до 150x150
+2. **K-means**: Медленнее median-cut; пользователь выбирает
+3. **Парсинг HTML**: BeautifulSoup достаточно быстр для слайдов
 
-### Optimization Strategies
+### Стратегии оптимизации
 
-- **Lazy loading**: Load images only if needed
-- **Caching**: Could cache dominant colors by image hash (future)
-- **Parallel processing**: Could analyze entities in parallel (future)
+- **Ленивая загрузка**: Загрузка изображений только при необходимости
+- **Кэширование**: Возможно кэширование доминирующих цветов по хешу изображения (в будущем)
+- **Параллельная обработка**: Возможен параллельный анализ элементов (в будущем)
 
-## Extensibility Points
+## Точки расширения
 
-### Adding New Color Formats
+### Добавление новых форматов цветов
 
-Add to `parse_css_color()` in `color_parser.py`:
+Добавить в `parse_css_color()` в `color_parser.py`:
 
 ```python
 if color.startswith('lab('):
     return parse_lab_color(color)
 ```
 
-### Adding New ML Algorithms
+### Добавление новых ML алгоритмов
 
-Add new function in `image_analyzer.py`:
+Добавить новую функцию в `image_analyzer.py`:
 
 ```python
 def dominant_colors_gmm(img, k=5):
-    # Gaussian Mixture Model implementation
+    # Реализация Gaussian Mixture Model
     ...
 ```
 
-Update CLI choices in `cli.py`.
+Обновить выбор в CLI в `cli.py`.
 
-### Adding New WCAG Versions
+### Добавление новых версий WCAG
 
-Update thresholds in `wcag.py`:
+Обновить пороги в `wcag.py`:
 
 ```python
 def classify_wcag_3_0(ratio, font_size, font_weight):
-    # WCAG 3.0 (APCA) calculations
+    # Расчеты WCAG 3.0 (APCA)
     ...
 ```
 
-## Deployment
+## Развертывание
 
-### Docker Architecture
+### Docker архитектура
 
 ```
 ┌─────────────────────────┐
-│  Stage 1: Builder       │
-│  • Install dependencies │
-│  • No source code       │
+│  Этап 1: Builder        │
+│  • Установка зависим.   │
+│  • Без исходного кода   │
 └───────────┬─────────────┘
             │
-            │ Copy /root/.local
+            │ Копирование /root/.local
             ▼
 ┌─────────────────────────┐
-│  Stage 2: Runtime       │
-│  • Copy dependencies    │
-│  • Copy source + examples│
-│  • Lightweight image    │
+│  Этап 2: Runtime        │
+│  • Копирование зависим. │
+│  • Копирование src+ex.  │
+│  • Легковесный образ    │
 └─────────────────────────┘
 ```
 
-**Benefits**:
-- Smaller final image
-- No build tools in production
-- Reproducible builds
+**Преимущества**:
+- Меньший финальный образ
+- Нет инструментов сборки в продакшене
+- Воспроизводимые сборки
 
-### Directory Mounting
+### Монтирование директорий
 
 ```yaml
 volumes:
-  - ./examples:/app/examples:ro  # Read-only
-  - ./output:/app/output         # Read-write
+  - ./examples:/app/examples:ro  # Только чтение
+  - ./output:/app/output         # Чтение-запись
 ```
 
-## Future Architecture Improvements
+## Будущие улучшения архитектуры
 
-1. **Plugin System**: Load custom ML algorithms dynamically
-2. **REST API**: Wrap CLI in Flask/FastAPI
-3. **Batch Processing**: Async analysis of multiple slides
-4. **Database**: Store historical results
-5. **Web UI**: React/Vue frontend
+1. **Система плагинов**: Динамическая загрузка пользовательских ML алгоритмов
+2. **REST API**: Обертка CLI во Flask/FastAPI
+3. **Пакетная обработка**: Асинхронный анализ нескольких слайдов
+4. **База данных**: Хранение исторических результатов
+5. **Веб UI**: React/Vue фронтенд
 
 ---
 
-**Maintainer**: HSE ML Team
+**Сопровождающий**: HSE ML Team
