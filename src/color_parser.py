@@ -52,20 +52,20 @@ def hsl_to_rgb(h: float, s: float, l: float) -> Tuple[int, int, int]:
             t += 1
         if t > 1:
             t -= 1
-        if t < 1/6:
+        if t < 1 / 6:
             return p + (q - p) * 6 * t
-        if t < 1/2:
+        if t < 1 / 2:
             return q
-        if t < 2/3:
-            return p + (q - p) * (2/3 - t) * 6
+        if t < 2 / 3:
+            return p + (q - p) * (2 / 3 - t) * 6
         return p
 
     q = l * (1 + s) if l < 0.5 else l + s - l * s
     p = 2 * l - q
 
-    r = hue_to_rgb(p, q, h + 1/3)
+    r = hue_to_rgb(p, q, h + 1 / 3)
     g = hue_to_rgb(p, q, h)
-    b = hue_to_rgb(p, q, h - 1/3)
+    b = hue_to_rgb(p, q, h - 1 / 3)
 
     return (int(r * 255), int(g * 255), int(b * 255))
 
@@ -93,29 +93,29 @@ def parse_css_color(color: str) -> RGBA:
 
     # Named colors (basic set)
     named_colors = {
-        'white': '#ffffff',
-        'black': '#000000',
-        'red': '#ff0000',
-        'green': '#008000',
-        'blue': '#0000ff',
-        'yellow': '#ffff00',
-        'cyan': '#00ffff',
-        'magenta': '#ff00ff',
-        'gray': '#808080',
-        'grey': '#808080',
-        'transparent': '#00000000',
+        "white": "#ffffff",
+        "black": "#000000",
+        "red": "#ff0000",
+        "green": "#008000",
+        "blue": "#0000ff",
+        "yellow": "#ffff00",
+        "cyan": "#00ffff",
+        "magenta": "#ff00ff",
+        "gray": "#808080",
+        "grey": "#808080",
+        "transparent": "#00000000",
     }
 
     if color in named_colors:
         color = named_colors[color]
 
     # Hex format
-    if color.startswith('#'):
+    if color.startswith("#"):
         hex_color = color[1:]
 
         # #RGB -> #RRGGBB
         if len(hex_color) == 3:
-            hex_color = ''.join([c*2 for c in hex_color])
+            hex_color = "".join([c * 2 for c in hex_color])
 
         # #RRGGBB
         if len(hex_color) == 6:
@@ -133,7 +133,7 @@ def parse_css_color(color: str) -> RGBA:
             return RGBA(r, g, b, a)
 
     # rgb/rgba format
-    rgb_match = re.match(r'rgba?\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+))?\s*\)', color)
+    rgb_match = re.match(r"rgba?\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+))?\s*\)", color)
     if rgb_match:
         r = int(rgb_match.group(1))
         g = int(rgb_match.group(2))
@@ -142,10 +142,7 @@ def parse_css_color(color: str) -> RGBA:
         return RGBA(r, g, b, a)
 
     # hsl/hsla format
-    hsl_match = re.match(
-        r'hsla?\s*\(\s*([\d.]+)\s*,\s*([\d.]+)%\s*,\s*([\d.]+)%\s*(?:,\s*([\d.]+))?\s*\)',
-        color
-    )
+    hsl_match = re.match(r"hsla?\s*\(\s*([\d.]+)\s*,\s*([\d.]+)%\s*,\s*([\d.]+)%\s*(?:,\s*([\d.]+))?\s*\)", color)
     if hsl_match:
         h = float(hsl_match.group(1))
         s = float(hsl_match.group(2))
@@ -197,14 +194,14 @@ def parse_style(style_str: str) -> Dict[str, str]:
         return style_dict
 
     # Split by semicolon
-    declarations = style_str.split(';')
+    declarations = style_str.split(";")
 
     for decl in declarations:
         decl = decl.strip()
-        if ':' not in decl:
+        if ":" not in decl:
             continue
 
-        prop, value = decl.split(':', 1)
+        prop, value = decl.split(":", 1)
         prop = prop.strip().lower()
         value = value.strip()
 
@@ -228,23 +225,23 @@ def parse_font_size_px(font_size: str) -> Optional[float]:
     font_size = font_size.strip().lower()
 
     # px
-    if font_size.endswith('px'):
+    if font_size.endswith("px"):
         try:
             return float(font_size[:-2])
         except ValueError:
             return None
 
     # pt (1pt = 1.333px)
-    if font_size.endswith('pt'):
+    if font_size.endswith("pt"):
         try:
             return float(font_size[:-2]) * 1.333
         except ValueError:
             return None
 
     # em/rem (assume 16px base)
-    if font_size.endswith('em') or font_size.endswith('rem'):
+    if font_size.endswith("em") or font_size.endswith("rem"):
         try:
-            return float(font_size[:-len('em')]) * 16.0
+            return float(font_size[: -len("em")]) * 16.0
         except ValueError:
             return None
 
@@ -255,7 +252,7 @@ def parse_font_size_px(font_size: str) -> Optional[float]:
         return None
 
 
-def extract_color_from_style(style_str: str, default_color: str = '#000000') -> RGBA:
+def extract_color_from_style(style_str: str, default_color: str = "#000000") -> RGBA:
     """
     Extract color from CSS style string.
 
@@ -267,5 +264,5 @@ def extract_color_from_style(style_str: str, default_color: str = '#000000') -> 
         RGBA object
     """
     style_dict = parse_style(style_str)
-    color_str = style_dict.get('color', default_color)
+    color_str = style_dict.get("color", default_color)
     return parse_css_color(color_str)

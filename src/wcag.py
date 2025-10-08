@@ -117,7 +117,7 @@ def classify_wcag(ratio: float, font_size_px: float, font_weight: str) -> Dict[s
         is_large = True
     elif font_size_px >= 18.67:
         # Check if bold
-        if font_weight in ('bold', 'bolder'):
+        if font_weight in ("bold", "bolder"):
             is_large = True
         elif font_weight.isdigit() and int(font_weight) >= 700:
             is_large = True
@@ -131,10 +131,10 @@ def classify_wcag(ratio: float, font_size_px: float, font_weight: str) -> Dict[s
         aaa_threshold = 7.0
 
     return {
-        'AA_normal': ratio >= 4.5,
-        'AA_large': ratio >= 3.0,
-        'AAA': ratio >= aaa_threshold,
-        'is_large_text': is_large
+        "AA_normal": ratio >= 4.5,
+        "AA_large": ratio >= 3.0,
+        "AAA": ratio >= aaa_threshold,
+        "is_large_text": is_large,
     }
 
 
@@ -143,7 +143,7 @@ def suggest_fixes(
     text_rgb: Tuple[int, int, int],
     bg_rgb: Tuple[int, int, int],
     font_size_px: float,
-    font_weight: str
+    font_weight: str,
 ) -> List[Dict[str, Any]]:
     """
     Generate recommendations for improving contrast.
@@ -178,7 +178,7 @@ def suggest_fixes(
 
     # Determine target ratio based on current font
     wcag_class = classify_wcag(current_ratio, font_size_px, font_weight)
-    is_large = wcag_class['is_large_text']
+    is_large = wcag_class["is_large_text"]
     target_ratio = 3.0 if is_large else 4.5
 
     if current_ratio >= target_ratio:
@@ -188,35 +188,41 @@ def suggest_fixes(
     inverted_text = (255 - text_rgb[0], 255 - text_rgb[1], 255 - text_rgb[2])
     inv_ratio = contrast_ratio(inverted_text, bg_rgb)
     if inv_ratio >= target_ratio:
-        suggestions.append({
-            'type': 'invert_text_color',
-            'description': 'Инвертировать цвет текста',
-            'new_value': f'#{inverted_text[0]:02x}{inverted_text[1]:02x}{inverted_text[2]:02x}',
-            'expected_ratio': round(inv_ratio, 2)
-        })
+        suggestions.append(
+            {
+                "type": "invert_text_color",
+                "description": "Инвертировать цвет текста",
+                "new_value": f"#{inverted_text[0]:02x}{inverted_text[1]:02x}{inverted_text[2]:02x}",
+                "expected_ratio": round(inv_ratio, 2),
+            }
+        )
 
     # 2. Change text to black or white
-    for new_text, name in [((0, 0, 0), 'black'), ((255, 255, 255), 'white')]:
+    for new_text, name in [((0, 0, 0), "black"), ((255, 255, 255), "white")]:
         new_ratio = contrast_ratio(new_text, bg_rgb)
         if new_ratio >= target_ratio:
-            suggestions.append({
-                'type': 'change_text_color',
-                'description': f'Изменить цвет текста на {name}',
-                'new_value': f'#{new_text[0]:02x}{new_text[1]:02x}{new_text[2]:02x}',
-                'expected_ratio': round(new_ratio, 2)
-            })
+            suggestions.append(
+                {
+                    "type": "change_text_color",
+                    "description": f"Изменить цвет текста на {name}",
+                    "new_value": f"#{new_text[0]:02x}{new_text[1]:02x}{new_text[2]:02x}",
+                    "expected_ratio": round(new_ratio, 2),
+                }
+            )
 
     # 3. Darken background
     for factor in [0.8, 0.6, 0.4, 0.2]:
         darkened_bg = tuple(int(c * factor) for c in bg_rgb)
         dark_ratio = contrast_ratio(text_rgb, darkened_bg)
         if dark_ratio >= target_ratio:
-            suggestions.append({
-                'type': 'darken_background',
-                'description': f'Затемнить фон на {int((1-factor)*100)}%',
-                'new_value': f'rgb({darkened_bg[0]}, {darkened_bg[1]}, {darkened_bg[2]})',
-                'expected_ratio': round(dark_ratio, 2)
-            })
+            suggestions.append(
+                {
+                    "type": "darken_background",
+                    "description": f"Затемнить фон на {int((1-factor)*100)}%",
+                    "new_value": f"rgb({darkened_bg[0]}, {darkened_bg[1]}, {darkened_bg[2]})",
+                    "expected_ratio": round(dark_ratio, 2),
+                }
+            )
             break
 
     # 4. Lighten background
@@ -224,12 +230,14 @@ def suggest_fixes(
         lightened_bg = tuple(min(255, int(c * factor)) for c in bg_rgb)
         light_ratio = contrast_ratio(text_rgb, lightened_bg)
         if light_ratio >= target_ratio:
-            suggestions.append({
-                'type': 'lighten_background',
-                'description': f'Осветлить фон на {int((factor-1)*100)}%',
-                'new_value': f'rgb({lightened_bg[0]}, {lightened_bg[1]}, {lightened_bg[2]})',
-                'expected_ratio': round(light_ratio, 2)
-            })
+            suggestions.append(
+                {
+                    "type": "lighten_background",
+                    "description": f"Осветлить фон на {int((factor-1)*100)}%",
+                    "new_value": f"rgb({lightened_bg[0]}, {lightened_bg[1]}, {lightened_bg[2]})",
+                    "expected_ratio": round(light_ratio, 2),
+                }
+            )
             break
 
     # 5. Increase font size (to qualify as "large text" with lower threshold)
@@ -237,20 +245,24 @@ def suggest_fixes(
         # Calculate if current ratio would pass as large text
         large_text_threshold = 3.0
         if current_ratio >= large_text_threshold:
-            suggestions.append({
-                'type': 'increase_font_size',
-                'description': f'Увеличить размер шрифта до ≥24px (порог AA large: 3:1, текущий: {round(current_ratio, 2)}:1)',
-                'new_value': '24px',
-                'expected_ratio': round(current_ratio, 2)
-            })
+            suggestions.append(
+                {
+                    "type": "increase_font_size",
+                    "description": f"Увеличить размер шрифта до ≥24px (порог AA large: 3:1, текущий: {round(current_ratio, 2)}:1)",
+                    "new_value": "24px",
+                    "expected_ratio": round(current_ratio, 2),
+                }
+            )
 
     # 6. Add text shadow/outline (visual enhancement, doesn't affect measured contrast)
     if len(suggestions) < 3:  # Only suggest if few other options
-        suggestions.append({
-            'type': 'add_text_shadow',
-            'description': 'Добавить тень текста для улучшения читаемости (не влияет на измеряемый контраст)',
-            'new_value': 'text-shadow: 0 0 4px rgba(0,0,0,0.8)',
-            'expected_ratio': None
-        })
+        suggestions.append(
+            {
+                "type": "add_text_shadow",
+                "description": "Добавить тень текста для улучшения читаемости (не влияет на измеряемый контраст)",
+                "new_value": "text-shadow: 0 0 4px rgba(0,0,0,0.8)",
+                "expected_ratio": None,
+            }
+        )
 
     return suggestions

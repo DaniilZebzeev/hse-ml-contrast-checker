@@ -38,7 +38,7 @@ def generate_html_report(result: Dict[str, Any], output_path: str) -> None:
     </style>
 </head>
 <body>
-    <h1>🎨 Contrast Analysis Report</h1>
+    <h1>Contrast Analysis Report</h1>
 
     <div class="summary">
         <h2>Slide #{result['slide_id']}</h2>
@@ -54,10 +54,10 @@ def generate_html_report(result: Dict[str, Any], output_path: str) -> None:
     </div>
 """
 
-    for ent in result['entities']:
-        wcag = ent['contrast']['wcag']
-        status = "✅ PASS" if wcag['AA_normal'] else "❌ FAIL"
-        status_class = "status-pass" if wcag['AA_normal'] else "status-fail"
+    for ent in result["entities"]:
+        wcag = ent["contrast"]["wcag"]
+        status = "PASS" if wcag["AA_normal"] else "FAIL"
+        status_class = "status-pass" if wcag["AA_normal"] else "status-fail"
 
         html += f"""
     <div class="entity-card">
@@ -106,8 +106,8 @@ def generate_html_report(result: Dict[str, Any], output_path: str) -> None:
         <div>
 """
 
-        bg_rgb = result['background']['effective_rgb']
-        for tc in ent['text_colors']:
+        bg_rgb = result["background"]["effective_rgb"]
+        for tc in ent["text_colors"]:
             html += f"""
             <div class="preview-box" style="background: rgb{bg_rgb}; color: {tc['css']}; font-size: {ent['font']['size_px']}px; font-weight: {ent['font']['weight']};">
                 Sample Text ({tc['css']})
@@ -119,13 +119,15 @@ def generate_html_report(result: Dict[str, Any], output_path: str) -> None:
 """
 
         # Add suggestions if failed
-        if not wcag['AA_normal'] and ent.get('suggestions'):
+        if not wcag["AA_normal"] and ent.get("suggestions"):
             html += """
         <div class="suggestions">
-            <h4>💡 Recommendations:</h4>
+            <h4>Recommendations:</h4>
 """
-            for sug in ent['suggestions']:
-                expected_ratio_text = f"(Expected ratio: {sug['expected_ratio']}:1)" if sug.get('expected_ratio') else ""
+            for sug in ent["suggestions"]:
+                expected_ratio_text = (
+                    f"(Expected ratio: {sug['expected_ratio']}:1)" if sug.get("expected_ratio") else ""
+                )
                 html += f"""
             <div class="suggestion-item">
                 <strong>{sug['type']}:</strong> {sug['description']}<br>
@@ -145,5 +147,5 @@ def generate_html_report(result: Dict[str, Any], output_path: str) -> None:
 </html>
 """
 
-    with open(output_path, 'w', encoding='utf-8') as f:
+    with open(output_path, "w", encoding="utf-8") as f:
         f.write(html)

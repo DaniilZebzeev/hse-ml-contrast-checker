@@ -12,9 +12,7 @@ from sklearn.cluster import KMeans
 
 
 def dominant_colors_mediancut(
-    img: Image.Image,
-    bbox: Optional[Tuple[int, int, int, int]] = None,
-    k: int = 5
+    img: Image.Image, bbox: Optional[Tuple[int, int, int, int]] = None, k: int = 5
 ) -> List[Tuple[Tuple[int, int, int], float]]:
     """
     Extract dominant colors using Median-cut algorithm.
@@ -47,8 +45,8 @@ def dominant_colors_mediancut(
         region = img.copy()
 
     # Convert to RGB if needed
-    if region.mode != 'RGB':
-        region = region.convert('RGB')
+    if region.mode != "RGB":
+        region = region.convert("RGB")
 
     # Resize for performance (max 150x150)
     max_size = 150
@@ -64,7 +62,7 @@ def dominant_colors_mediancut(
 
     # Median-cut quantization (ADAPTIVE palette)
     # This is the ML algorithm - it learns the optimal palette from the image
-    pal_img = region.convert('P', palette=Image.Palette.ADAPTIVE, colors=k)
+    pal_img = region.convert("P", palette=Image.Palette.ADAPTIVE, colors=k)
 
     # Get palette and color counts
     palette = pal_img.getpalette()  # [r1, g1, b1, r2, g2, b2, ...]
@@ -92,10 +90,7 @@ def dominant_colors_mediancut(
 
 
 def dominant_colors_kmeans(
-    img: Image.Image,
-    bbox: Optional[Tuple[int, int, int]] = None,
-    k: int = 5,
-    random_state: int = 42
+    img: Image.Image, bbox: Optional[Tuple[int, int, int, int]] = None, k: int = 5, random_state: int = 42
 ) -> List[Tuple[Tuple[int, int, int], float]]:
     """
     Extract dominant colors using K-means clustering.
@@ -129,8 +124,8 @@ def dominant_colors_kmeans(
         region = img.copy()
 
     # Convert to RGB if needed
-    if region.mode != 'RGB':
-        region = region.convert('RGB')
+    if region.mode != "RGB":
+        region = region.convert("RGB")
 
     # Resize for performance (150x150)
     region = region.resize((150, 150), Image.Resampling.LANCZOS)
@@ -151,10 +146,7 @@ def dominant_colors_kmeans(
     weights = counts / len(labels)
 
     # Build result list
-    result = [
-        (tuple(colors[i]), weights[i])
-        for i in range(k)
-    ]
+    result = [(tuple(colors[i]), weights[i]) for i in range(k)]
 
     # Sort by weight (descending)
     result.sort(key=lambda x: x[1], reverse=True)
@@ -162,7 +154,7 @@ def dominant_colors_kmeans(
     return result
 
 
-def get_dominant_color_simple(img: Image.Image, method: str = 'mediancut') -> Tuple[int, int, int]:
+def get_dominant_color_simple(img: Image.Image, method: str = "mediancut") -> Tuple[int, int, int]:
     """
     Get single most dominant color from image.
 
@@ -173,7 +165,7 @@ def get_dominant_color_simple(img: Image.Image, method: str = 'mediancut') -> Tu
     Returns:
         RGB tuple of most dominant color
     """
-    if method == 'kmeans':
+    if method == "kmeans":
         colors = dominant_colors_kmeans(img, k=1)
     else:
         colors = dominant_colors_mediancut(img, k=1)
@@ -186,10 +178,7 @@ def get_dominant_color_simple(img: Image.Image, method: str = 'mediancut') -> Tu
 
 
 def analyze_image_region(
-    img: Image.Image,
-    geometry: dict,
-    method: str = 'mediancut',
-    k: int = 5
+    img: Image.Image, geometry: dict, method: str = "mediancut", k: int = 5
 ) -> List[Tuple[Tuple[int, int, int], float]]:
     """
     Analyze image region based on entity geometry.
@@ -204,14 +193,14 @@ def analyze_image_region(
         List of dominant colors with weights
     """
     # Extract bounding box
-    left = geometry.get('left', 0)
-    top = geometry.get('top', 0)
-    width = geometry.get('width', img.width)
-    height = geometry.get('height', img.height)
+    left = geometry.get("left", 0)
+    top = geometry.get("top", 0)
+    width = geometry.get("width", img.width)
+    height = geometry.get("height", img.height)
 
     # Include translate if present
-    left += geometry.get('translate_x', 0)
-    top += geometry.get('translate_y', 0)
+    left += geometry.get("translate_x", 0)
+    top += geometry.get("translate_y", 0)
 
     # Ensure within image bounds
     left = max(0, min(left, img.width))
@@ -222,7 +211,7 @@ def analyze_image_region(
     bbox = (int(left), int(top), int(right), int(bottom))
 
     # Extract dominant colors
-    if method == 'kmeans':
+    if method == "kmeans":
         return dominant_colors_kmeans(img, bbox=bbox, k=k)
     else:
         return dominant_colors_mediancut(img, bbox=bbox, k=k)

@@ -11,10 +11,7 @@ from src.image_analyzer import analyze_image_region, get_dominant_color_simple
 from src.wcag import contrast_ratio, classify_wcag, suggest_fixes
 
 
-def analyze_text_colors(
-    spans_data: List[Dict],
-    default_color: str
-) -> List[Tuple[Tuple[int, int, int], str, float]]:
+def analyze_text_colors(spans_data: List[Dict], default_color: str) -> List[Tuple[Tuple[int, int, int], str, float]]:
     """
     Analyze text colors with font-size and text-length weighting.
 
@@ -32,22 +29,23 @@ def analyze_text_colors(
     weighted_colors = []
 
     for span in spans_data:
-        style = parse_style(span.get('style', ''))
+        style = parse_style(span.get("style", ""))
 
         # Extract color
-        color_css = style.get('color', default_color)
+        color_css = style.get("color", default_color)
         rgba = parse_css_color(color_css)
 
         # Extract font size (for weighting)
-        font_size_str = style.get('font-size', '16px')
+        font_size_str = style.get("font-size", "16px")
         try:
             from src.color_parser import parse_font_size_px
+
             font_size = parse_font_size_px(font_size_str) or 16.0
         except:
             font_size = 16.0
 
         # Text length
-        text_len = len(span.get('text', ''))
+        text_len = len(span.get("text", ""))
 
         # Weight = visual area (font_size × text_length)
         weight = font_size * text_len
@@ -66,10 +64,7 @@ def analyze_text_colors(
 
 
 def determine_effective_background(
-    slide_data: Dict[str, Any],
-    bg_image: Optional[Image.Image] = None,
-    ml_method: str = 'mediancut',
-    k_colors: int = 5
+    slide_data: Dict[str, Any], bg_image: Optional[Image.Image] = None, ml_method: str = "mediancut", k_colors: int = 5
 ) -> Tuple[Tuple[int, int, int], str, Any]:
     """
     Determine effective background color.
@@ -89,30 +84,28 @@ def determine_effective_background(
         Tuple of (rgb, source_description, details)
     """
     # Check for base_color
-    base_color = slide_data.get('base_color')
+    base_color = slide_data.get("base_color")
 
     if base_color:
         rgba = parse_css_color(base_color)
         # If semi-transparent, blend over white
         if rgba.a < 1.0:
             rgb = blend_over(rgba, (255, 255, 255))
-            return (rgb, f'base_color blended: {base_color}', {'original': base_color, 'blended': rgb})
+            return (rgb, f"base_color blended: {base_color}", {"original": base_color, "blended": rgb})
         else:
-            return (rgba.to_rgb_tuple(), f'base_color: {base_color}', {'color': base_color})
+            return (rgba.to_rgb_tuple(), f"base_color: {base_color}", {"color": base_color})
 
     # Check for background image
     if bg_image:
         dominant = get_dominant_color_simple(bg_image, method=ml_method)
-        return (dominant, f'image dominant ({ml_method})', {'method': ml_method})
+        return (dominant, f"image dominant ({ml_method})", {"method": ml_method})
 
     # Fallback: white
-    return ((255, 255, 255), 'default: white', {})
+    return ((255, 255, 255), "default: white", {})
 
 
 def analyze_entity_contrast(
-    entity: Dict[str, Any],
-    effective_bg: Tuple[int, int, int],
-    default_text_color: str = '#000000'
+    entity: Dict[str, Any], effective_bg: Tuple[int, int, int], default_text_color: str = "#000000"
 ) -> Dict[str, Any]:
     """
     Analyze contrast for a single entity.
@@ -129,51 +122,41 @@ def analyze_entity_contrast(
     font_info = extract_font_info(entity)
 
     # Extract text colors with weighting
-    text_colors = analyze_text_colors(entity.get('spans', []), default_text_color)
+    text_colors = analyze_text_colors(entity.get("spans", []), default_text_color)
 
     # Calculate contrast for each text color
     contrasts = []
     for rgb, css, weight in text_colors:
         ratio = contrast_ratio(rgb, effective_bg)
-        wcag = classify_wcag(ratio, font_info['size_px'], font_info['weight'])
+        wcag = classify_wcag(ratio, font_info["size_px"], font_info["weight"])
 
-        contrasts.append({
-            'rgb': rgb,
-            'css': css,
-            'weight': weight,
-            'ratio': round(ratio, 2),
-            'wcag': wcag
-        })
+        contrasts.append({"rgb": rgb, "css": css, "weight": weight, "ratio": round(ratio, 2), "wcag": wcag})
 
     # Find minimum ratio (worst case)
-    min_ratio = min(c['ratio'] for c in contrasts)
-    min_contrast = next(c for c in contrasts if c['ratio'] == min_ratio)
+    min_ratio = min(c["ratio"] for c in contrasts)
+    min_contrast = next(c for c in contrasts if c["ratio"] == min_ratio)
 
     # Overall WCAG classification (based on worst case)
-    overall_wcag = min_contrast['wcag']
+    overall_wcag = min_contrast["wcag"]
 
     # Generate suggestions if fails AA normal
     suggestions = []
-    if not overall_wcag['AA_normal']:
+    if not overall_wcag["AA_normal"]:
         suggestions = suggest_fixes(
-            min_ratio,
-            min_contrast['rgb'],
-            effective_bg,
-            font_info['size_px'],
-            font_info['weight']
+            min_ratio, min_contrast["rgb"], effective_bg, font_info["size_px"], font_info["weight"]
         )
 
     return {
-        'id': entity['id'],
-        'text_colors': [{'rgb': c['rgb'], 'css': c['css'], 'weight': c['weight']} for c in contrasts],
-        'contrast': {
-            'min_ratio': min_ratio,
-            'max_ratio': round(max(c['ratio'] for c in contrasts), 2),
-            'wcag': overall_wcag,
-            'contrasts': contrasts
+        "id": entity["id"],
+        "text_colors": [{"rgb": c["rgb"], "css": c["css"], "weight": c["weight"]} for c in contrasts],
+        "contrast": {
+            "min_ratio": min_ratio,
+            "max_ratio": round(max(c["ratio"] for c in contrasts), 2),
+            "wcag": overall_wcag,
+            "contrasts": contrasts,
         },
-        'font': font_info,
-        'suggestions': suggestions
+        "font": font_info,
+        "suggestions": suggestions,
     }
 
 
@@ -181,8 +164,8 @@ def analyze_slide(
     slide_json_path: str,
     slide_index: Optional[int] = None,
     bg_image_path: Optional[str] = None,
-    ml_method: str = 'mediancut',
-    k_colors: int = 5
+    ml_method: str = "mediancut",
+    k_colors: int = 5,
 ) -> Dict[str, Any]:
     """
     Analyze contrast for a slide.
@@ -202,7 +185,7 @@ def analyze_slide(
         ValueError: If JSON is invalid
     """
     # Load slide JSON
-    with open(slide_json_path, 'r', encoding='utf-8') as f:
+    with open(slide_json_path, "r", encoding="utf-8") as f:
         data = json.load(f)
 
     # Handle array vs single object
@@ -217,18 +200,13 @@ def analyze_slide(
     # Load background image if provided
     bg_image = None
     if bg_image_path:
-        bg_image = Image.open(bg_image_path).convert('RGB')
+        bg_image = Image.open(bg_image_path).convert("RGB")
 
     # Determine effective background
-    effective_bg, bg_source, bg_details = determine_effective_background(
-        slide_data,
-        bg_image,
-        ml_method,
-        k_colors
-    )
+    effective_bg, bg_source, bg_details = determine_effective_background(slide_data, bg_image, ml_method, k_colors)
 
     # Extract entities from HTML
-    content_html = slide_data.get('content_html', '')
+    content_html = slide_data.get("content_html", "")
     entities = extract_entities(content_html)
 
     # Analyze each entity
@@ -239,19 +217,15 @@ def analyze_slide(
 
     # Build final result
     result = {
-        'slide_id': slide_data.get('id', 'unknown'),
-        'background': {
-            'effective_rgb': effective_bg,
-            'source': bg_source,
-            'details': bg_details
+        "slide_id": slide_data.get("id", "unknown"),
+        "background": {"effective_rgb": effective_bg, "source": bg_source, "details": bg_details},
+        "ml_method": ml_method,
+        "entities": entity_results,
+        "summary": {
+            "total_entities": len(entity_results),
+            "passed_AA_normal": sum(1 for e in entity_results if e["contrast"]["wcag"]["AA_normal"]),
+            "failed_AA_normal": sum(1 for e in entity_results if not e["contrast"]["wcag"]["AA_normal"]),
         },
-        'ml_method': ml_method,
-        'entities': entity_results,
-        'summary': {
-            'total_entities': len(entity_results),
-            'passed_AA_normal': sum(1 for e in entity_results if e['contrast']['wcag']['AA_normal']),
-            'failed_AA_normal': sum(1 for e in entity_results if not e['contrast']['wcag']['AA_normal']),
-        }
     }
 
     return result
