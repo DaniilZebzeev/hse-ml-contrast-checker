@@ -3,6 +3,9 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![CI](https://github.com/DaniilZebzeev/hse-ml-contrast-checker/actions/workflows/ci.yml/badge.svg)](https://github.com/DaniilZebzeev/hse-ml-contrast-checker/actions/workflows/ci.yml)
+[![CD](https://github.com/DaniilZebzeev/hse-ml-contrast-checker/actions/workflows/cd.yml/badge.svg)](https://github.com/DaniilZebzeev/hse-ml-contrast-checker/actions/workflows/cd.yml)
+[![Docker Image](https://img.shields.io/docker/v/danilzebzeev/hse-contrast-checker?label=docker&logo=docker)](https://hub.docker.com/r/danilzebzeev/hse-contrast-checker)
 
 Production-ready Python инструмент для анализа контрастности текста и фона согласно стандарту **WCAG 2.2** с использованием **машинного обучения**.
 
@@ -24,9 +27,23 @@ Production-ready Python инструмент для анализа контра�
 
 ## 🚀 Быстрый старт
 
-### Установка
+### Вариант 1: Docker Hub (рекомендуется)
 
-#### Вариант 1: Локальная установка (venv)
+**Не нужно клонировать репозиторий или устанавливать зависимости!**
+
+```bash
+# Скачать готовый образ
+docker pull danilzebzeev/hse-contrast-checker:latest
+
+# Запустить анализ
+docker run -v $(pwd)/output:/app/output \
+  danilzebzeev/hse-contrast-checker:latest \
+  --slide-json /app/examples/slide_color_bg.json
+
+# Результаты появятся в папке output/
+```
+
+### Вариант 2: Локальная установка (venv)
 
 ```bash
 # Клонировать репозиторий
@@ -46,7 +63,7 @@ venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-#### Вариант 2: Docker
+### Вариант 3: Локальная сборка Docker
 
 ```bash
 # Собрать образ
@@ -79,7 +96,12 @@ python -m src.cli \
 ### Использование Docker
 
 ```bash
-# Используя docker run
+# Используя образ с Docker Hub
+docker run -v $(pwd)/output:/app/output \
+    danilzebzeev/hse-contrast-checker:latest \
+    --slide-json /app/examples/slide_color_bg.json
+
+# Или локально собранный образ
 docker run -v $(pwd)/examples:/app/examples -v $(pwd)/output:/app/output \
     hse-contrast-checker --slide-json /app/examples/slide_color_bg.json
 
@@ -260,6 +282,26 @@ hse-ml-contrast-checker/
 - **Линтинг**: flake8
 - **Проверка типов**: mypy
 - **Docstrings**: Google style
+
+## 🚀 CI/CD Pipeline
+
+Проект использует полноценный CI/CD pipeline:
+
+### Continuous Integration (CI)
+- ✅ Автоматические тесты на Python 3.10 и 3.11
+- ✅ Проверка типов с mypy
+- ✅ Линтинг с flake8
+- ✅ Проверка форматирования с Black
+- ✅ Тестирование Docker образа
+- ✅ Покрытие кода с Codecov
+
+### Continuous Deployment (CD)
+- 🚀 Автоматическая публикация на Docker Hub при push в main
+- 🏷️ Версионирование образов (latest, main-{sha})
+- 💾 Кэширование сборки для ускорения
+- 📝 Автообновление описания на Docker Hub
+
+**Статус:** [GitHub Actions](https://github.com/DaniilZebzeev/hse-ml-contrast-checker/actions)
 
 ## 🤝 Вклад в проект
 
