@@ -174,7 +174,7 @@ def suggest_fixes(
         >>> fixes[0]['type']
         'change_text_color'
     """
-    suggestions = []
+    suggestions: List[Dict[str, Any]] = []
 
     # Determine target ratio based on current font
     wcag_class = classify_wcag(current_ratio, font_size_px, font_weight)
@@ -212,7 +212,7 @@ def suggest_fixes(
 
     # 3. Darken background
     for factor in [0.8, 0.6, 0.4, 0.2]:
-        darkened_bg = tuple(int(c * factor) for c in bg_rgb)
+        darkened_bg = (int(bg_rgb[0] * factor), int(bg_rgb[1] * factor), int(bg_rgb[2] * factor))
         dark_ratio = contrast_ratio(text_rgb, darkened_bg)
         if dark_ratio >= target_ratio:
             suggestions.append(
@@ -227,7 +227,7 @@ def suggest_fixes(
 
     # 4. Lighten background
     for factor in [1.2, 1.4, 1.6, 1.8]:
-        lightened_bg = tuple(min(255, int(c * factor)) for c in bg_rgb)
+        lightened_bg = (min(255, int(bg_rgb[0] * factor)), min(255, int(bg_rgb[1] * factor)), min(255, int(bg_rgb[2] * factor)))
         light_ratio = contrast_ratio(text_rgb, lightened_bg)
         if light_ratio >= target_ratio:
             suggestions.append(

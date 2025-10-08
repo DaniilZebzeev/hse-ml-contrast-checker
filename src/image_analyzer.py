@@ -68,7 +68,7 @@ def dominant_colors_mediancut(
     palette = pal_img.getpalette()  # [r1, g1, b1, r2, g2, b2, ...]
     color_counts = pal_img.getcolors()  # [(count1, idx1), (count2, idx2), ...]
 
-    if not color_counts:
+    if not color_counts or not palette:
         # Fallback: return dominant color
         return [((128, 128, 128), 1.0)]
 
@@ -77,6 +77,8 @@ def dominant_colors_mediancut(
     result = []
 
     for count, idx in color_counts:
+        # idx is the palette index (integer)
+        assert isinstance(idx, int), "Expected idx to be int"
         r = palette[idx * 3]
         g = palette[idx * 3 + 1]
         b = palette[idx * 3 + 2]

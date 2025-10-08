@@ -125,7 +125,7 @@ def analyze_entity_contrast(
     text_colors = analyze_text_colors(entity.get("spans", []), default_text_color)
 
     # Calculate contrast for each text color
-    contrasts = []
+    contrasts: List[Dict[str, Any]] = []
     for rgb, css, weight in text_colors:
         ratio = contrast_ratio(rgb, effective_bg)
         wcag = classify_wcag(ratio, font_info["size_px"], font_info["weight"])
@@ -133,25 +133,25 @@ def analyze_entity_contrast(
         contrasts.append({"rgb": rgb, "css": css, "weight": weight, "ratio": round(ratio, 2), "wcag": wcag})
 
     # Find minimum ratio (worst case)
-    min_ratio = min(c["ratio"] for c in contrasts)
+    ratios: List[float] = [float(c["ratio"]) for c in contrasts]
+    min_ratio = min(ratios)
     min_contrast = next(c for c in contrasts if c["ratio"] == min_ratio)
 
     # Overall WCAG classification (based on worst case)
-    overall_wcag = min_contrast["wcag"]
+    overall_wcag: Dict[str, Any] = min_contrast["wcag"]  # type: ignore
+    min_text_rgb: Tuple[int, int, int] = min_contrast["rgb"]  # type: ignore
 
     # Generate suggestions if fails AA normal
-    suggestions = []
+    suggestions: List[Dict[str, Any]] = []
     if not overall_wcag["AA_normal"]:
-        suggestions = suggest_fixes(
-            min_ratio, min_contrast["rgb"], effective_bg, font_info["size_px"], font_info["weight"]
-        )
+        suggestions = suggest_fixes(min_ratio, min_text_rgb, effective_bg, font_info["size_px"], font_info["weight"])
 
     return {
         "id": entity["id"],
         "text_colors": [{"rgb": c["rgb"], "css": c["css"], "weight": c["weight"]} for c in contrasts],
         "contrast": {
             "min_ratio": min_ratio,
-            "max_ratio": round(max(c["ratio"] for c in contrasts), 2),
+            "max_ratio": round(max(ratios), 2),
             "wcag": overall_wcag,
             "contrasts": contrasts,
         },

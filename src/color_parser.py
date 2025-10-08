@@ -188,7 +188,7 @@ def parse_style(style_str: str) -> Dict[str, str]:
     Returns:
         Dictionary of style properties
     """
-    style_dict = {}
+    style_dict: Dict[str, str] = {}
 
     if not style_str:
         return style_dict
