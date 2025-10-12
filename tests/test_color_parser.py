@@ -1,12 +1,12 @@
 """Tests for color_parser module."""
 
 import pytest
-from src.color_parser import parse_css_color, blend_over, hsl_to_rgb, parse_font_size_px, parse_style, RGBA
+from src.color_parser import parse_color_from_css, blend_over, convert_hsl_to_rgb, parse_font_size_px, parse_style, RGBA
 
 
 def test_hex6_parsing():
     """Test parsing 6-digit hex colors."""
-    rgba = parse_css_color("#ff0000")
+    rgba = parse_color_from_css("#ff0000")
     assert rgba.r == 255
     assert rgba.g == 0
     assert rgba.b == 0
@@ -15,7 +15,7 @@ def test_hex6_parsing():
 
 def test_hex8_parsing():
     """Test parsing 8-digit hex colors with alpha."""
-    rgba = parse_css_color("#4FAEFF26")
+    rgba = parse_color_from_css("#4FAEFF26")
     assert rgba.r == 79
     assert rgba.g == 174
     assert rgba.b == 255
@@ -24,7 +24,7 @@ def test_hex8_parsing():
 
 def test_hex3_parsing():
     """Test parsing 3-digit hex colors."""
-    rgba = parse_css_color("#f00")
+    rgba = parse_color_from_css("#f00")
     assert rgba.r == 255
     assert rgba.g == 0
     assert rgba.b == 0
@@ -32,7 +32,7 @@ def test_hex3_parsing():
 
 def test_rgb_parsing():
     """Test parsing rgb() format."""
-    rgba = parse_css_color("rgb(100, 150, 200)")
+    rgba = parse_color_from_css("rgb(100, 150, 200)")
     assert rgba.r == 100
     assert rgba.g == 150
     assert rgba.b == 200
@@ -41,7 +41,7 @@ def test_rgb_parsing():
 
 def test_rgba_parsing():
     """Test parsing rgba() format."""
-    rgba = parse_css_color("rgba(100, 150, 200, 0.5)")
+    rgba = parse_color_from_css("rgba(100, 150, 200, 0.5)")
     assert rgba.r == 100
     assert rgba.g == 150
     assert rgba.b == 200
@@ -51,19 +51,19 @@ def test_rgba_parsing():
 def test_hsl_to_rgb():
     """Test HSL to RGB conversion."""
     # Red: hsl(0, 100%, 50%)
-    r, g, b = hsl_to_rgb(0, 100, 50)
+    r, g, b = convert_hsl_to_rgb(0, 100, 50)
     assert r == 255
     assert g == 0
     assert b == 0
 
     # Gray: hsl(0, 0%, 50%)
-    r, g, b = hsl_to_rgb(0, 0, 50)
+    r, g, b = convert_hsl_to_rgb(0, 0, 50)
     assert r == g == b == 127
 
 
 def test_hsl_parsing():
     """Test parsing hsl() format."""
-    rgba = parse_css_color("hsl(0, 100%, 50%)")
+    rgba = parse_color_from_css("hsl(0, 100%, 50%)")
     assert rgba.r == 255
     assert rgba.g == 0
     assert rgba.b == 0
@@ -71,10 +71,10 @@ def test_hsl_parsing():
 
 def test_named_colors():
     """Test parsing named colors."""
-    rgba = parse_css_color("white")
+    rgba = parse_color_from_css("white")
     assert rgba.to_rgb_tuple() == (255, 255, 255)
 
-    rgba = parse_css_color("black")
+    rgba = parse_color_from_css("black")
     assert rgba.to_rgb_tuple() == (0, 0, 0)
 
 

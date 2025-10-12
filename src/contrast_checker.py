@@ -5,10 +5,10 @@ from typing import Dict, Any, List, Tuple, Optional
 from pathlib import Path
 from PIL import Image
 
-from src.color_parser import parse_css_color, blend_over, parse_style, RGBA
+from src.color_parser import parse_color_from_css, blend_over, parse_style, RGBA
 from src.html_parser import extract_entities, extract_font_info, extract_geometry
 from src.image_analyzer import analyze_image_region, get_dominant_color_simple
-from src.wcag import contrast_ratio, classify_wcag, suggest_fixes
+from src.wcag import compute_contrast_ratio, classify_contrast_level, suggest_contrast_fixes
 
 
 def analyze_text_colors(spans_data: List[Dict], default_color: str) -> List[Tuple[Tuple[int, int, int], str, float]]:
@@ -23,7 +23,7 @@ def analyze_text_colors(spans_data: List[Dict], default_color: str) -> List[Tupl
         List of (rgb_tuple, css_color, weight) sorted by weight
     """
     if not spans_data:
-        rgba = parse_css_color(default_color)
+        rgba = parse_color_from_css(default_color)
         return [(rgba.to_rgb_tuple(), default_color, 1.0)]
 
     weighted_colors = []
@@ -33,7 +33,7 @@ def analyze_text_colors(spans_data: List[Dict], default_color: str) -> List[Tupl
 
         # Extract color
         color_css = style.get("color", default_color)
-        rgba = parse_css_color(color_css)
+        rgba = parse_color_from_css(color_css)
 
         # Extract font size (for weighting)
         font_size_str = style.get("font-size", "16px")
@@ -87,7 +87,7 @@ def determine_effective_background(
     base_color = slide_data.get("base_color")
 
     if base_color:
-        rgba = parse_css_color(base_color)
+        rgba = parse_color_from_css(base_color)
         # If semi-transparent, blend over white
         if rgba.a < 1.0:
             rgb = blend_over(rgba, (255, 255, 255))
@@ -127,8 +127,8 @@ def analyze_entity_contrast(
     # Calculate contrast for each text color
     contrasts: List[Dict[str, Any]] = []
     for rgb, css, weight in text_colors:
-        ratio = contrast_ratio(rgb, effective_bg)
-        wcag = classify_wcag(ratio, font_info["size_px"], font_info["weight"])
+        ratio = compute_contrast_ratio(rgb, effective_bg)
+        wcag = classify_contrast_level(ratio, font_info["size_px"], font_info["weight"])
 
         contrasts.append({"rgb": rgb, "css": css, "weight": weight, "ratio": round(ratio, 2), "wcag": wcag})
 
@@ -144,7 +144,7 @@ def analyze_entity_contrast(
     # Generate suggestions if fails AA normal
     suggestions: List[Dict[str, Any]] = []
     if not overall_wcag["AA_normal"]:
-        suggestions = suggest_fixes(min_ratio, min_text_rgb, effective_bg, font_info["size_px"], font_info["weight"])
+        suggestions = suggest_contrast_fixes(min_ratio, min_text_rgb, effective_bg, font_info["size_px"], font_info["weight"])
 
     return {
         "id": entity["id"],
