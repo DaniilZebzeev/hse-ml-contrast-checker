@@ -144,7 +144,9 @@ def analyze_entity_contrast(
     # Generate suggestions if fails AA normal
     suggestions: List[Dict[str, Any]] = []
     if not overall_wcag["AA_normal"]:
-        suggestions = suggest_contrast_fixes(min_ratio, min_text_rgb, effective_bg, font_info["size_px"], font_info["weight"])
+        suggestions = suggest_contrast_fixes(
+            min_ratio, min_text_rgb, effective_bg, font_info["size_px"], font_info["weight"]
+        )
 
     return {
         "id": entity["id"],
