@@ -56,6 +56,9 @@ def dominant_colors_mediancut(
         else:
             region = img.copy()
 
+        if region.width == 0 or region.height == 0:
+            return [(DEFAULT_COLOR, 1.0)]
+
         # Convert to RGB if needed
         if region.mode != "RGB":
             region = region.convert("RGB")
@@ -149,6 +152,9 @@ def dominant_colors_kmeans(
         else:
             region = img.copy()
 
+        if region.width == 0 or region.height == 0:
+            return [(DEFAULT_COLOR, 1.0)]
+
         # Convert to RGB if needed
         if region.mode != "RGB":
             region = region.convert("RGB")
@@ -162,8 +168,12 @@ def dominant_colors_kmeans(
         if len(pixels) == 0:
             return [(DEFAULT_COLOR, 1.0)]
 
+        # Check number of unique pixels to avoid issues with KMeans
+        unique_pixels = np.unique(pixels, axis=0)
+        k = min(k, len(unique_pixels))
+
         # K-means clustering - this is the ML algorithm
-        kmeans = KMeans(n_clusters=min(k, len(pixels)), random_state=random_state, n_init=10)
+        kmeans = KMeans(n_clusters=k, random_state=random_state, n_init=10)
         kmeans.fit(pixels)
 
         # Get cluster centers (dominant colors) and labels
@@ -179,6 +189,9 @@ def dominant_colors_kmeans(
             (tuple(int(c) for c in colors[i]), float(weights[i])) 
             for i in range(len(colors))
         ]
+
+        # Filter out zero-weight clusters (in case)
+        result = [item for item in result if item[1] > 0]
 
         # Sort by weight (descending)
         result.sort(key=lambda x: x[1], reverse=True)
@@ -268,7 +281,7 @@ def _safe_crop(img: Image.Image, bbox: Tuple[int, int, int, int]) -> Image.Image
         bbox: (left, top, right, bottom)
         
     Returns:
-        Cropped image or original if crop fails
+        Cropped image or empty image if crop invalid
     """
     try:
         left, top, right, bottom = bbox
@@ -279,13 +292,9 @@ def _safe_crop(img: Image.Image, bbox: Tuple[int, int, int, int]) -> Image.Image
         right = max(left, min(right, img.width))
         bottom = max(top, min(bottom, img.height))
         
-        # Check if region has area
-        if right > left and bottom > top:
-            return img.crop((left, top, right, bottom))
+        return img.crop((left, top, right, bottom))
     except Exception:
-        pass
-    
-    return img.copy()
+        return Image.new("RGB", (0, 0))
 
 
 def _safe_resize(img: Image.Image, max_size: int = 150) -> Image.Image:
@@ -300,6 +309,9 @@ def _safe_resize(img: Image.Image, max_size: int = 150) -> Image.Image:
         Resized image or original if resize fails
     """
     try:
+        if img.width == 0 or img.height == 0:
+            return img
+        
         if img.width <= max_size and img.height <= max_size:
             return img
         
