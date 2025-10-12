@@ -6,9 +6,16 @@ Web Content Accessibility Guidelines (WCAG) 2.2.
 
 from typing import Tuple, Dict, List, Any
 import math
+from .wcag_constants import (
+    SRGB_GAMMA, SRGB_A, SRGB_DIV_LOW, SRGB_DIV_HIGH,
+    LUMA_R, LUMA_G, LUMA_B,
+    CONTRAST_K,AA_NORMAL,
+    AAA_NORMAL, AA_LARGE, AAA_LARGE,
+    DARKEN_FACTORS, LIGHTEN_FACTORS
+)
 
 
-def relative_luminance(rgb: Tuple[int, int, int]) -> float:
+def compute_relative_luminance(rgb: Tuple[int, int, int]) -> float:
     """
     Calculate relative luminance of an RGB color.
 
@@ -26,9 +33,9 @@ def relative_luminance(rgb: Tuple[int, int, int]) -> float:
         Relative luminance (0.0-1.0)
 
     Example:
-        >>> relative_luminance((255, 255, 255))  # White
+        >>> compute_relative_luminance((255, 255, 255))  # White
         1.0
-        >>> relative_luminance((0, 0, 0))  # Black
+        >>> compute_relative_luminance((0, 0, 0))  # Black
         0.0
     """
     r, g, b = rgb
@@ -41,20 +48,20 @@ def relative_luminance(rgb: Tuple[int, int, int]) -> float:
     # Apply gamma correction
     def _linearize(c: float) -> float:
         if c <= 0.03928:
-            return c / 12.92
-        return math.pow((c + 0.055) / 1.055, 2.4)
+            return c / SRGB_DIV_LOW
+        return math.pow((c + SRGB_A) / SRGB_DIV_HIGH, SRGB_GAMMA)
 
     r_linear = _linearize(r_srgb)
     g_linear = _linearize(g_srgb)
     b_linear = _linearize(b_srgb)
 
     # Calculate luminance
-    luminance = 0.2126 * r_linear + 0.7152 * g_linear + 0.0722 * b_linear
+    luminance = LUMA_R * r_linear + LUMA_G * g_linear + LUMA_B * b_linear
 
     return luminance
 
 
-def contrast_ratio(color1: Tuple[int, int, int], color2: Tuple[int, int, int]) -> float:
+def compute_contrast_ratio(color1: Tuple[int, int, int], color2: Tuple[int, int, int]) -> float:
     """
     Calculate contrast ratio between two colors.
 
@@ -70,22 +77,22 @@ def contrast_ratio(color1: Tuple[int, int, int], color2: Tuple[int, int, int]) -
         Contrast ratio (1.0-21.0)
 
     Example:
-        >>> contrast_ratio((0, 0, 0), (255, 255, 255))  # Black vs White
+        >>> compute_contrast_ratio((0, 0, 0), (255, 255, 255))  # Black vs White
         21.0
     """
-    lum1 = relative_luminance(color1)
-    lum2 = relative_luminance(color2)
+    lum1 = compute_relative_luminance(color1)
+    lum2 = compute_relative_luminance(color2)
 
     # Ensure L1 is lighter
     if lum1 < lum2:
         lum1, lum2 = lum2, lum1
 
-    ratio = (lum1 + 0.05) / (lum2 + 0.05)
+    ratio = (lum1 + CONTRAST_K) / (lum2 + CONTRAST_K)
 
     return ratio
 
 
-def classify_wcag(ratio: float, font_size_px: float, font_weight: str) -> Dict[str, bool]:
+def classify_contrast_level(ratio: float, font_size_px: float, font_weight: str) -> Dict[str, bool]:
     """
     Classify contrast ratio according to WCAG 2.2 standards.
 
@@ -108,7 +115,7 @@ def classify_wcag(ratio: float, font_size_px: float, font_weight: str) -> Dict[s
         Dictionary with AA_normal, AA_large, AAA keys (bool values)
 
     Example:
-        >>> classify_wcag(4.6, 16, 'normal')
+        >>> classify_contrast_level(4.6, 16, 'normal')
         {'AA_normal': True, 'AA_large': True, 'AAA': False}
     """
     # Determine if large text
@@ -124,21 +131,21 @@ def classify_wcag(ratio: float, font_size_px: float, font_weight: str) -> Dict[s
 
     # WCAG thresholds
     if is_large:
-        aa_threshold = 3.0
-        aaa_threshold = 4.5
+        aa_threshold = AA_LARGE
+        aaa_threshold = AAA_LARGE
     else:
-        aa_threshold = 4.5
-        aaa_threshold = 7.0
+        aa_threshold = AA_NORMAL
+        aaa_threshold = AAA_NORMAL
 
     return {
-        "AA_normal": ratio >= 4.5,
-        "AA_large": ratio >= 3.0,
+        "AA_normal": ratio >= AA_NORMAL,
+        "AA_large": ratio >= AA_LARGE,
         "AAA": ratio >= aaa_threshold,
         "is_large_text": is_large,
     }
 
 
-def suggest_fixes(
+def suggest_contrast_fixes(
     current_ratio: float,
     text_rgb: Tuple[int, int, int],
     bg_rgb: Tuple[int, int, int],
@@ -170,23 +177,23 @@ def suggest_fixes(
         - expected_ratio: Expected new contrast ratio (if calculable)
 
     Example:
-        >>> fixes = suggest_fixes(2.5, (100, 100, 100), (200, 200, 200), 16, 'normal')
+        >>> fixes = suggest_contrast_fixes(2.5, (100, 100, 100), (200, 200, 200), 16, 'normal')
         >>> fixes[0]['type']
         'change_text_color'
     """
     suggestions: List[Dict[str, Any]] = []
 
     # Determine target ratio based on current font
-    wcag_class = classify_wcag(current_ratio, font_size_px, font_weight)
+    wcag_class = classify_contrast_level(current_ratio, font_size_px, font_weight)
     is_large = wcag_class["is_large_text"]
-    target_ratio = 3.0 if is_large else 4.5
+    target_ratio = AA_LARGE if is_large else AA_NORMAL
 
     if current_ratio >= target_ratio:
         return suggestions  # Already passes
 
     # 1. Invert text color
     inverted_text = (255 - text_rgb[0], 255 - text_rgb[1], 255 - text_rgb[2])
-    inv_ratio = contrast_ratio(inverted_text, bg_rgb)
+    inv_ratio = compute_contrast_ratio(inverted_text, bg_rgb)
     if inv_ratio >= target_ratio:
         suggestions.append(
             {
@@ -199,7 +206,7 @@ def suggest_fixes(
 
     # 2. Change text to black or white
     for new_text, name in [((0, 0, 0), "black"), ((255, 255, 255), "white")]:
-        new_ratio = contrast_ratio(new_text, bg_rgb)
+        new_ratio = compute_contrast_ratio(new_text, bg_rgb)
         if new_ratio >= target_ratio:
             suggestions.append(
                 {
@@ -211,9 +218,9 @@ def suggest_fixes(
             )
 
     # 3. Darken background
-    for factor in [0.8, 0.6, 0.4, 0.2]:
+    for factor in DARKEN_FACTORS:
         darkened_bg = (int(bg_rgb[0] * factor), int(bg_rgb[1] * factor), int(bg_rgb[2] * factor))
-        dark_ratio = contrast_ratio(text_rgb, darkened_bg)
+        dark_ratio = compute_contrast_ratio(text_rgb, darkened_bg)
         if dark_ratio >= target_ratio:
             suggestions.append(
                 {
@@ -226,13 +233,13 @@ def suggest_fixes(
             break
 
     # 4. Lighten background
-    for factor in [1.2, 1.4, 1.6, 1.8]:
+    for factor in LIGHTEN_FACTORS:
         lightened_bg = (
             min(255, int(bg_rgb[0] * factor)),
             min(255, int(bg_rgb[1] * factor)),
             min(255, int(bg_rgb[2] * factor)),
         )
-        light_ratio = contrast_ratio(text_rgb, lightened_bg)
+        light_ratio = compute_contrast_ratio(text_rgb, lightened_bg)
         if light_ratio >= target_ratio:
             suggestions.append(
                 {
@@ -247,7 +254,7 @@ def suggest_fixes(
     # 5. Increase font size (to qualify as "large text" with lower threshold)
     if font_size_px < 24:
         # Calculate if current ratio would pass as large text
-        large_text_threshold = 3.0
+        large_text_threshold = AA_LARGE
         if current_ratio >= large_text_threshold:
             suggestions.append(
                 {

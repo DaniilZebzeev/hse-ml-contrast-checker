@@ -3,6 +3,7 @@
 import re
 from dataclasses import dataclass
 from typing import Tuple, Optional, Dict
+from .color_parser_constants import UNIT_PX, UNIT_PT, UNIT_EM, UNIT_REM, PT_TO_PX, EM_BASE_PX, NAMED_COLORS
 
 
 @dataclass
@@ -16,7 +17,7 @@ class RGBA:
 
     def to_rgb_tuple(self) -> Tuple[int, int, int]:
         """Convert to RGB tuple."""
-        return (self.r, self.g, self.b)
+        return self.r, self.g, self.b
 
     def __str__(self) -> str:
         """String representation."""
@@ -25,7 +26,7 @@ class RGBA:
         return f"rgb({self.r}, {self.g}, {self.b})"
 
 
-def hsl_to_rgb(h: float, s: float, l: float) -> Tuple[int, int, int]:
+def convert_hsl_to_rgb(h: float, s: float, l: float) -> Tuple[int, int, int]:
     """
     Convert HSL to RGB.
 
@@ -45,9 +46,9 @@ def hsl_to_rgb(h: float, s: float, l: float) -> Tuple[int, int, int]:
     if s == 0:
         # Achromatic
         rgb_val = int(l * 255)
-        return (rgb_val, rgb_val, rgb_val)
+        return rgb_val, rgb_val, rgb_val
 
-    def hue_to_rgb(p: float, q: float, t: float) -> float:
+    def hue_to_rgb(p_base: float, q: float, t: float) -> float:
         if t < 0:
             t += 1
         if t > 1:
@@ -67,10 +68,10 @@ def hsl_to_rgb(h: float, s: float, l: float) -> Tuple[int, int, int]:
     g = hue_to_rgb(p, q, h)
     b = hue_to_rgb(p, q, h - 1 / 3)
 
-    return (int(r * 255), int(g * 255), int(b * 255))
+    return int(r * 255), int(g * 255), int(b * 255)
 
 
-def parse_css_color(color: str) -> RGBA:
+def parse_color_from_css(color: str) -> RGBA:
     """
     Parse CSS color string to RGBA.
 
@@ -91,23 +92,8 @@ def parse_css_color(color: str) -> RGBA:
     """
     color = color.strip().lower()
 
-    # Named colors (basic set)
-    named_colors = {
-        "white": "#ffffff",
-        "black": "#000000",
-        "red": "#ff0000",
-        "green": "#008000",
-        "blue": "#0000ff",
-        "yellow": "#ffff00",
-        "cyan": "#00ffff",
-        "magenta": "#ff00ff",
-        "gray": "#808080",
-        "grey": "#808080",
-        "transparent": "#00000000",
-    }
-
-    if color in named_colors:
-        color = named_colors[color]
+    if color in NAMED_COLORS:
+        color = NAMED_COLORS[color]
 
     # Hex format
     if color.startswith("#"):
@@ -148,7 +134,7 @@ def parse_css_color(color: str) -> RGBA:
         s = float(hsl_match.group(2))
         l = float(hsl_match.group(3))
         a = float(hsl_match.group(4)) if hsl_match.group(4) else 1.0
-        r, g, b = hsl_to_rgb(h, s, l)
+        r, g, b = convert_hsl_to_rgb(h, s, l)
         return RGBA(r, g, b, a)
 
     raise ValueError(f"Unrecognized color format: {color}")
@@ -175,7 +161,7 @@ def blend_over(over: RGBA, under: Tuple[int, int, int]) -> Tuple[int, int, int]:
     g = int(over.g * alpha + under[1] * (1 - alpha))
     b = int(over.b * alpha + under[2] * (1 - alpha))
 
-    return (r, g, b)
+    return r, g, b
 
 
 def parse_style(style_str: str) -> Dict[str, str]:
@@ -196,12 +182,12 @@ def parse_style(style_str: str) -> Dict[str, str]:
     # Split by semicolon
     declarations = style_str.split(";")
 
-    for decl in declarations:
-        decl = decl.strip()
-        if ":" not in decl:
+    for declaration in declarations:
+        declaration = declaration.strip()
+        if ":" not in declaration:
             continue
 
-        prop, value = decl.split(":", 1)
+        prop, value = declaration.split(":", 1)
         prop = prop.strip().lower()
         value = value.strip()
 
@@ -225,23 +211,23 @@ def parse_font_size_px(font_size: str) -> Optional[float]:
     font_size = font_size.strip().lower()
 
     # px
-    if font_size.endswith("px"):
+    if font_size.endswith(UNIT_PX):
         try:
             return float(font_size[:-2])
         except ValueError:
             return None
 
     # pt (1pt = 1.333px)
-    if font_size.endswith("pt"):
+    if font_size.endswith(UNIT_PT):
         try:
-            return float(font_size[:-2]) * 1.333
+            return float(font_size[:-2]) * PT_TO_PX
         except ValueError:
             return None
 
     # em/rem (assume 16px base)
-    if font_size.endswith("em") or font_size.endswith("rem"):
+    if font_size.endswith(UNIT_EM) or font_size.endswith(UNIT_REM):
         try:
-            return float(font_size[: -len("em")]) * 16.0
+            return float(font_size[: -len(UNIT_EM)]) * EM_BASE_PX
         except ValueError:
             return None
 
@@ -265,4 +251,4 @@ def extract_color_from_style(style_str: str, default_color: str = "#000000") -> 
     """
     style_dict = parse_style(style_str)
     color_str = style_dict.get("color", default_color)
-    return parse_css_color(color_str)
+    return parse_color_from_css(color_str)
