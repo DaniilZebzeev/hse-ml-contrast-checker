@@ -1,3 +1,5 @@
+from typing import Dict
+
 # === Constants ==============================================================
 # Supported CSS units and conversion ratios for font-size parsing.
 
@@ -6,8 +8,8 @@ UNIT_PT = "pt"
 UNIT_EM = "em"
 UNIT_REM = "rem"
 
-PT_TO_PX = 1.333      # 1pt = 1.333px
-EM_BASE_PX = 16.0     # 1em = 16px default browser base
+PT_TO_PX = 1.333  # 1pt = 1.333px
+EM_BASE_PX = 16.0  # 1em = 16px default browser base
 
 # === Named colors ===========================================================
 # Basic CSS color keywords (can be extended)

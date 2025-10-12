@@ -7,11 +7,20 @@ Web Content Accessibility Guidelines (WCAG) 2.2.
 from typing import Tuple, Dict, List, Any
 import math
 from .wcag_constants import (
-    SRGB_GAMMA, SRGB_A, SRGB_DIV_LOW, SRGB_DIV_HIGH,
-    LUMA_R, LUMA_G, LUMA_B,
-    CONTRAST_K,AA_NORMAL,
-    AAA_NORMAL, AA_LARGE, AAA_LARGE,
-    DARKEN_FACTORS, LIGHTEN_FACTORS
+    SRGB_GAMMA,
+    SRGB_A,
+    SRGB_DIV_LOW,
+    SRGB_DIV_HIGH,
+    LUMA_R,
+    LUMA_G,
+    LUMA_B,
+    CONTRAST_K,
+    AA_NORMAL,
+    AAA_NORMAL,
+    AA_LARGE,
+    AAA_LARGE,
+    DARKEN_FACTORS,
+    LIGHTEN_FACTORS,
 )
 
 
