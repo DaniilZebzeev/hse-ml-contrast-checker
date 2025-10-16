@@ -10,6 +10,9 @@
 - [wcag](#wcag)
 - [contrast_checker](#contrast_checker)
 - [report_generator](#report_generator)
+- [webapp (Web API)](#webapp-web-api)
+- [batch_analyzer](#batch_analyzer)
+- [slide_scraper](#slide_scraper)
 
 ---
 
@@ -468,6 +471,213 @@ print(f"Проходит AA: {wcag['AA_normal']}")
 
 ---
 
+## webapp (Web API)
+
+FastAPI веб-приложение для анализа контрастности через HTTP API.
+
+### Endpoints
+
+#### `GET /`
+
+Главная страница веб-интерфейса.
+
+**Возвращает:**
+- HTML страницу с веб-интерфейсом
+
+#### `GET /health`
+
+Health check endpoint для проверки состояния сервиса.
+
+**Возвращает:**
+```json
+{
+  "status": "ok",
+  "service": "HSE ML Contrast Checker"
+}
+```
+
+#### `POST /api/analyze-url`
+
+Анализ слайдов из URL с использованием Selenium.
+
+**Параметры (Form Data):**
+- `url` (str, обязательный): URL презентации Diaclass
+- `ml_method` (str, optional): "mediancut" или "kmeans" (default: "mediancut")
+- `slide_mode` (str, optional): "single" или "all" (default: "single")
+- `slide_index` (int, optional): Индекс слайда для режима "single" (default: 1)
+
+**Возвращает:**
+```json
+{
+  "success": true,
+  "session_id": "abc123",
+  "total_slides": 3,
+  "results": [
+    {
+      "slide_id": "slide-001",
+      "slide_number": 1,
+      "summary": {
+        "total_entities": 5,
+        "passed_AA_normal": 4,
+        "failed_AA_normal": 1
+      },
+      "report_url": "/results/abc123/report_001.html",
+      "json_url": "/results/abc123/result_001.json"
+    }
+  ]
+}
+```
+
+**Ошибки:**
+- `400`: Не удалось извлечь слайды
+- `500`: Ошибка при анализе
+
+#### `POST /api/analyze-file`
+
+Анализ загруженного HTML файла.
+
+**Параметры (Multipart Form Data):**
+- `file` (File, обязательный): HTML файл презентации
+- `ml_method` (str, optional): "mediancut" или "kmeans" (default: "mediancut")
+- `slide_mode` (str, optional): "single" или "all" (default: "single")
+- `slide_index` (int, optional): Индекс слайда (default: 1)
+
+**Возвращает:**
+- Аналогично `/api/analyze-url`
+
+**Ошибки:**
+- `400`: Неверный тип файла (только HTML)
+- `500`: Ошибка при анализе
+
+#### `GET /api/result/{session_id}/{filename}`
+
+Получение результатов анализа.
+
+**Параметры (Path):**
+- `session_id` (str): ID сессии
+- `filename` (str): Имя файла (report_XXX.html или result_XXX.json)
+
+**Возвращает:**
+- HTML отчет или JSON файл
+
+**Ошибки:**
+- `404`: Файл не найден
+
+### Пример использования
+
+```python
+import requests
+
+# Health check
+response = requests.get('http://localhost:8000/health')
+print(response.json())
+
+# Анализ по URL
+data = {
+    'url': 'https://app.diaclass.ru/share/xxx',
+    'ml_method': 'kmeans',
+    'slide_mode': 'all'
+}
+response = requests.post('http://localhost:8000/api/analyze-url', data=data)
+result = response.json()
+
+print(f"Проанализировано слайдов: {result['total_slides']}")
+for slide_result in result['results']:
+    print(f"Слайд {slide_result['slide_number']}: {slide_result['report_url']}")
+```
+
+---
+
+## batch_analyzer
+
+Модуль для массовой обработки множества слайдов.
+
+### Функции
+
+#### `analyze_slide_batch(slides_dir, output_dir, ml_method, verbose)`
+
+Анализирует все JSON файлы слайдов в директории.
+
+**Параметры:**
+- `slides_dir` (str): Директория с JSON файлами слайдов
+- `output_dir` (str): Директория для сохранения результатов
+- `ml_method` (str): ML метод ("mediancut" или "kmeans")
+- `verbose` (bool): Подробный вывод
+
+**Возвращает:**
+- `List[Dict]`: Список результатов анализа
+
+**Пример:**
+```python
+from src.batch_analyzer import analyze_slide_batch
+
+results = analyze_slide_batch(
+    slides_dir='examples/slides',
+    output_dir='output/batch',
+    ml_method='kmeans',
+    verbose=True
+)
+
+print(f"Успешно проанализировано: {len([r for r in results if 'error' not in r])}")
+```
+
+---
+
+## slide_scraper
+
+Модули для извлечения слайдов из HTML презентаций.
+
+### slide_scraper.py (Базовый)
+
+#### `scrape_slide_from_file(file_path, output_path, slide_id)`
+
+Извлекает данные слайда из HTML файла.
+
+**Параметры:**
+- `file_path` (str): Путь к HTML файлу
+- `output_path` (str, optional): Путь для сохранения JSON
+- `slide_id` (str, optional): ID слайда
+
+**Возвращает:**
+- `Dict`: Данные слайда в формате JSON
+
+### slide_scraper_advanced.py (Продвинутый)
+
+#### `scrape_all_slides_from_url(url, output_dir, use_selenium, slide_index)`
+
+Извлекает слайды из URL с поддержкой Selenium.
+
+**Параметры:**
+- `url` (str): URL презентации
+- `output_dir` (str): Директория для сохранения
+- `use_selenium` (bool): Использовать Selenium
+- `slide_index` (int, optional): Извлечь конкретный слайд
+
+**Возвращает:**
+- `List[Dict]`: Список данных слайдов
+
+**Пример:**
+```python
+from src.slide_scraper_advanced import scrape_all_slides_from_url
+
+# Извлечь все слайды
+slides = scrape_all_slides_from_url(
+    url='https://app.diaclass.ru/share/xxx',
+    output_dir='examples/slides',
+    use_selenium=True
+)
+
+# Извлечь только слайд 5
+slides = scrape_all_slides_from_url(
+    url='https://app.diaclass.ru/share/xxx',
+    output_dir='examples/slides',
+    use_selenium=True,
+    slide_index=5
+)
+```
+
+---
+
 ## Обработка ошибок
 
 ### Распространенные исключения
@@ -486,5 +696,6 @@ except Exception as e:
 ---
 
 **Сопровождающий**: HSE ML Team
-**Версия**: 1.0.0
-**Последнее обновление**: 2025
+**Версия**: 1.1.0
+**Последнее обновление**: Октябрь 2025
+
