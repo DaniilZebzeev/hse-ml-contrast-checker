@@ -1,14 +1,38 @@
 version: '3.8'
 
 services:
-  contrast-checker:
+  # Web application service
+  web:
     build: .
-    image: hse-contrast-checker:latest
-    container_name: hse-contrast-checker
+    image: hse-contrast-checker-web:latest
+    container_name: hse-contrast-checker-web
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./web_output:/app/web_output
+      - ./examples:/app/examples:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DISPLAY=:99
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # CLI service (for manual runs)
+  cli:
+    build: .
+    image: hse-contrast-checker-web:latest
+    container_name: hse-contrast-checker-cli
     volumes:
       - ./examples:/app/examples:ro
       - ./output:/app/output
     environment:
       - PYTHONUNBUFFERED=1
-    # Override command in docker-compose run
-    # Example: docker-compose run contrast-checker --slide-json /app/examples/slide_color_bg.json
+    entrypoint: ["python", "-m", "src.cli"]
+    command: ["--help"]
+    profiles:
+      - cli

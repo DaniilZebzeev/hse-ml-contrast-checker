@@ -1,1 +1,1 @@
-"""Tests for HSE ML Contrast Checker."""
+"""Tests package for HSE ML Contrast Checker."""

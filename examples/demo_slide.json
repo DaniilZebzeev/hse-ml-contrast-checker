@@ -1,12 +1,5 @@
 {
-  "id": 708252,
-  "color_text": "#000000",
-  "custom_theme": null,
-  "base_color": "#4FAEFF26",
-  "slide_images": [],
-  "content_slide": [
-    {
-      "content": "<div class=\"slide h-100\"><div class=\"entity__wrapper\" style=\"left: 100px; top: 120px; width: 600px; height: 120px;\"><div id=\"text-tXzpS0Fak9\" class=\"entity entity-text\"><p style=\"text-align:center;\"><span style=\"font-size:52px; font-weight:normal; color:#000000;\">Мир животных</span></p></div></div></div>"
-    }
-  ]
+  "id": "diagclass-slide-001",
+  "base_color": "#e6f2ff",
+  "content_html": "<div id=\"title\" style=\"color: #000000; font-size: 36px; font-weight: bold\">Машинное обучение</div><div id=\"text-1\" style=\"color: #000000; font-size: 32px;\">Зачем нужно классическое ML?</div><div id=\"text-2\" style=\"color: #212529; font-size: 28px;\">Применение классического ML</div><div id=\"text-3\" style=\"color: #212529; font-size: 26px;\">Введение в машинное обучение</div><div id=\"text-4\" style=\"color: #212529; font-size: 22px;\">Анализ текста в машинном обучении</div>"
 }
